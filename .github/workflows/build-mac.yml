@@ -1,0 +1,31 @@
+name: Build macOS
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+
+      - name: Build
+        run: cmake --build build --config Release -j4
+
+      - name: Package
+        run: |
+          mkdir -p dist
+          cp -R "build/UltimateTranceGate_artefacts/Release/VST3/Ultimate Trance Gate.vst3" dist/
+          cp -R "build/UltimateTranceGate_artefacts/Release/AU/Ultimate Trance Gate.component" dist/
+          for p in dist/*.vst3 dist/*.component; do codesign --force --deep --sign - "$p"; done
+          cp install_mac.command dist/
+          chmod +x dist/install_mac.command
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: UltimateTranceGate-macOS
+          path: dist

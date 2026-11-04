@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ultimate Trance Gate · Groovebox</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#9A9CA3}a:hover{color:#FF7A1A}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 1040px; height: 640px; box-sizing: border-box; background: #232427; color: #ECECEE; font-family: 'IBM Plex Mono', ui-monospace, monospace; padding: 18px 24px 20px 24px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; border-top: 6px solid #FF7A1A">
+
+  <!-- Top: brand + slot keys -->
+  <div style="display: flex; align-items: center; justify-content: space-between; height: 52px">
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: 0.08em; line-height: 1">ULTIMATE TRANCE GATE</div>
+      <a href="https://www.instagram.com/mikita_laurenau/" style="font-size: 11px; text-decoration: none; letter-spacing: 0.04em">created by mikita_laurenau</a>
+    </div>
+    <div style="display: flex; align-items: flex-end; gap: 8px">
+      <sc-for list="{{slots}}" as="sl" hint-placeholder-count="8">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 5px">
+          <span style="width: 7px; height: 7px; border-radius: 4px; background: {{sl.led}}; box-shadow: {{sl.glow}}" aria-hidden="true"></span>
+          <button style="width: 46px; height: 38px; border-radius: 6px; border: 1px solid #3B3D42; background: {{sl.bg}}; color: {{sl.fg}}; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700">{{sl.letter}}</button>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- LCD + control block -->
+  <div style="display: flex; gap: 14px; height: 156px">
+    <div style="flex: 1; background: #17130B; border: 2px solid #0F0D08; border-radius: 10px; box-shadow: inset 0 0 0 1px #2C2414; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; color: #FFB547">
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <span style="font-size: 11px; color: #17130B; background: #FFB547; padding: 2px 6px; border-radius: 3px; font-weight: 600">B</span>
+          <span style="font-size: 15px; font-weight: 600; letter-spacing: 0.04em">EURODANCE / RHYTHM STAB 3-3-2</span>
+        </div>
+        <span style="font-size: 12px; color: #C98A2E">138.0 BPM</span>
+      </div>
+      <div style="position: relative; flex: 1; border-top: 1px dashed #4A3A1C; border-bottom: 1px dashed #4A3A1C">
+        <svg viewBox="0 0 1600 100" preserveAspectRatio="none" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%" aria-hidden="true">
+          <polyline points="{{env}}" fill="none" stroke="#FFB547" stroke-width="2" vector-effect="non-scaling-stroke"></polyline>
+          <line x1="{{playX}}" y1="0" x2="{{playX}}" y2="100" stroke="#FF7A1A" stroke-width="2" vector-effect="non-scaling-stroke"></line>
+        </svg>
+      </div>
+      <div style="display: flex; gap: 22px; font-size: 12px; color: #C98A2E">
+        <span>STEPS <span style="color: #FFB547">16</span></span>
+        <span>RATE <span style="color: #FFB547">1/16</span></span>
+        <span>SLOT <span style="color: #FFB547">B / 8</span></span>
+        <span>STEP <span style="color: #FFB547">04</span></span>
+      </div>
+    </div>
+
+    <div style="width: 300px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+      <sc-for list="{{encoders}}" as="e" hint-placeholder-count="6">
+        <div style="background: #2B2D31; border: 1px solid #3B3D42; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px">
+          <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
+            <circle cx="17" cy="17" r="15" fill="#1B1C1F" stroke="#45484E" stroke-width="1"></circle>
+            <circle cx="17" cy="17" r="11" fill="#33363B"></circle>
+            <line x1="17" y1="17" x2="{{e.px}}" y2="{{e.py}}" stroke="#ECECEE" stroke-width="2.5" stroke-linecap="round"></line>
+          </svg>
+          <span style="font-size: 10px; color: #9A9CA3; letter-spacing: 0.08em">{{e.label}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- Step pads -->
+  <div style="display: flex; flex-direction: column; gap: 6px">
+    <div style="display: flex; gap: 8px">
+      <sc-for list="{{steps}}" as="s" hint-placeholder-count="16">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 5px; position: relative">
+          <button aria-label="{{s.aria}}" style="height: 62px; border-radius: 7px; border: 1px solid {{s.border}}; background: #2E3034; padding: 4px; display: flex; flex-direction: column; justify-content: flex-end; position: relative">
+            <span style="position: absolute; top: 5px; left: 50%; margin-left: -9px; width: 18px; height: 4px; border-radius: 2px; background: {{s.led}}" aria-hidden="true"></span>
+            <sc-if value="{{s.on}}" hint-placeholder-val="{{true}}">
+              <span style="display: flex; gap: 2px; width: 100%; height: {{s.h}}%" aria-hidden="true">
+                <sc-for list="{{s.subs}}" as="u" hint-placeholder-count="1">
+                  <span style="flex: 1; border-radius: 4px; background: #FF7A1A; opacity: {{s.op}}"></span>
+                </sc-for>
+              </span>
+            </sc-if>
+          </button>
+          <sc-if value="{{s.tie}}" hint-placeholder-val="{{false}}">
+            <span style="position: absolute; top: 40px; right: -10px; width: 12px; height: 8px; background: #FF7A1A; border-radius: 2px; z-index: 1" aria-hidden="true"></span>
+          </sc-if>
+          <div style="display: flex; justify-content: center; gap: 3px; height: 6px" aria-hidden="true">
+            <sc-for list="{{s.dots}}" as="d" hint-placeholder-count="1">
+              <span style="width: 5px; height: 5px; border-radius: 3px; background: {{d}}"></span>
+            </sc-for>
+          </div>
+          <span style="text-align: center; font-size: 10px; color: {{s.numColor}}">{{s.num}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- Function keys -->
+  <div style="display: flex; gap: 8px; height: 30px">
+    <sc-for list="{{keys}}" as="k" hint-placeholder-count="10">
+      <button style="flex: 1; border-radius: 5px; border: 1px solid #3B3D42; background: #2B2D31; color: #ECECEE; font-size: 11px; font-weight: 600; letter-spacing: 0.08em">{{k}}</button>
+    </sc-for>
+    <button style="flex: 1.6; border-radius: 5px; border: 1px solid #FF7A1A; background: #FF7A1A; color: #1B1C1F; font-size: 11px; font-weight: 700; letter-spacing: 0.1em">RANDOM</button>
+  </div>
+
+  <!-- Knobs -->
+  <div style="flex: 1; display: flex; align-items: center; justify-content: space-between; background: #1E1F22; border-radius: 10px; padding: 0 18px">
+    <sc-for list="{{knobs}}" as="k" hint-placeholder-count="9">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; width: 92px">
+        <svg width="66" height="66" viewBox="0 0 66 66" role="img" aria-label="{{k.aria}}">
+          <sc-for list="{{ticks}}" as="t" hint-placeholder-count="11">
+            <line x1="{{t.x1}}" y1="{{t.y1}}" x2="{{t.x2}}" y2="{{t.y2}}" stroke="#5A5D63" stroke-width="1.5" stroke-linecap="round"></line>
+          </sc-for>
+          <circle cx="33" cy="33" r="22" fill="#33363B" stroke="#4A4D53" stroke-width="1"></circle>
+          <circle cx="33" cy="33" r="17" fill="#2A2C30"></circle>
+          <line x1="{{k.ix1}}" y1="{{k.iy1}}" x2="{{k.px}}" y2="{{k.py}}" stroke="{{k.color}}" stroke-width="3" stroke-linecap="round"></line>
+        </svg>
+        <span style="font-size: 10px; letter-spacing: 0.12em; color: #9A9CA3">{{k.label}}</span>
+        <span style="font-size: 12px; color: #ECECEE">{{k.value}}</span>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#FF7A1A","options":["#FF7A1A","#3BA9FF","#B6FF3B"]},"$preview":{"width":1040,"height":640}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#FF7A1A';
+    const play = 3;
+    // Eurodance · Rhythm Stab 3-3-2 (with accents, a held stab and a roll)
+    const S = [
+      { l: 1 }, { l: 0 }, { l: 0 }, { l: 0.7 },
+      { l: 0 }, { l: 0 }, { l: 1, t: 1 }, { l: 1, c: 1 },
+      { l: 1 }, { l: 0 }, { l: 0 }, { l: 0.7 },
+      { l: 0 }, { l: 0 }, { l: 1 }, { l: 1, r: 2 }
+    ];
+    const steps = S.map((s, i) => {
+      const r = s.r || 1;
+      return {
+        on: s.l > 0,
+        h: Math.round(30 + s.l * 62),
+        op: s.l >= 0.9 ? 1 : 0.6,
+        subs: Array.from({ length: r }, (_, k) => k),
+        led: i === play ? '#FFFFFF' : (s.l > 0 ? accent : '#45484E'),
+        border: i === play ? '#ECECEE' : '#3B3D42',
+        tie: !!s.t,
+        dots: Array.from({ length: r }, () => (r > 1 ? accent : '#45484E')),
+        num: i % 4 === 0 ? String(i / 4 + 1) : '·',
+        numColor: i % 4 === 0 ? '#ECECEE' : '#6E7178',
+        aria: 'Step ' + (i + 1) + (s.l > 0 ? ' on' : ' off')
+      };
+    });
+
+    const top = (l) => (100 - l * 86 - 7).toFixed(1);
+    const pts = ['0,95'];
+    S.forEach((s, i) => {
+      if (!s.l) return;
+      const r = s.r || 1, w = 100 / r;
+      for (let k = 0; k < r; k++) {
+        const xs = i * 100 + k * w;
+        if (s.c && k === 0) pts.push(xs + ',' + top(s.l));
+        else pts.push(xs + ',95', (xs + 1.5) + ',' + top(s.l));
+        if (s.t && k === r - 1) pts.push(((i + 1) * 100) + ',' + top(s.l));
+        else { const xe = xs + w * 0.75; pts.push(xe + ',' + top(s.l), (xe + 3) + ',95'); }
+      }
+    });
+    pts.push('1600,95');
+
+    const active = 1;
+    const slots = 'ABCDEFGH'.split('').map((letter, i) => ({
+      letter,
+      led: i === active ? accent : '#45484E',
+      glow: i === active ? '0 0 8px ' + accent : 'none',
+      bg: i === active ? '#3A3C41' : '#2B2D31',
+      fg: i === active ? '#FFFFFF' : '#B8BAC0'
+    }));
+
+    const at = (cx, f, r) => {
+      const a = (135 + f * 270) * Math.PI / 180;
+      return { x: (cx + r * Math.cos(a)).toFixed(1), y: (cx + r * Math.sin(a)).toFixed(1) };
+    };
+    const enc = (label, f) => { const p = at(17, f, 9); return { label, px: p.x, py: p.y }; };
+    const knob = (label, f, value) => {
+      const p = at(33, f, 15), q = at(33, f, 6);
+      return { label, value, color: accent, aria: label + ' ' + value, px: p.x, py: p.y, ix1: q.x, iy1: q.y };
+    };
+    const ticks = Array.from({ length: 11 }, (_, i) => {
+      const a = (135 + i * 27) * Math.PI / 180;
+      return {
+        x1: (33 + 27 * Math.cos(a)).toFixed(1), y1: (33 + 27 * Math.sin(a)).toFixed(1),
+        x2: (33 + 31 * Math.cos(a)).toFixed(1), y2: (33 + 31 * Math.sin(a)).toFixed(1)
+      };
+    });
+
+    return {
+      steps,
+      env: pts.join(' '),
+      playX: String(play * 100 + 30),
+      slots,
+      ticks,
+      encoders: [enc('PRESET', 0.55), enc('STEPS', 0.5), enc('RATE', 0.45), enc('HITS', 0.3), enc('ROTATE', 0), enc('SLOT', 0.15)],
+      keys: ['<<', '>>', 'REV', 'INV', 'x2', '/2', 'FILL', 'CLR', 'COPY', 'PASTE'],
+      knobs: [
+        knob('ATTACK', 0.12, '1.0 ms'), knob('DECAY', 0.45, '150 ms'), knob('SUSTAIN', 1, '100 %'),
+        knob('RELEASE', 0.3, '25 ms'), knob('GATE', 0.6, '60 %'), knob('SWING', 0, '0 %'),
+        knob('DEPTH', 1, '100 %'), knob('STEREO', 0, 'OFF'), knob('MIX', 1, '100 %')
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
