@@ -218,7 +218,36 @@ input::placeholder{color:#8FA7BA}
   </div>
 
   <!-- ===================== Knobs ===================== -->
-  <div style="height: 76px; flex: none; display: flex; align-items: center; background: #2D1621; border: 1px solid #4F2D3D; border-radius: 16px; padding: 0 8px; box-sizing: border-box">
+  <div style="height: 76px; flex: none; display: flex; align-items: center; background: #2D1621; border: 1px solid #4F2D3D; border-radius: 16px; padding: 0 8px; box-sizing: border-box; position: relative">
+    <!-- Filter pop-out: appears for LPF / HPF, sits above the mode switch -->
+    <sc-if value="{{fltShow}}" hint-placeholder-val="{{false}}">
+      <div role="dialog" aria-label="{{fltTitle}}" style="position: absolute; left: 0; bottom: 84px; width: 252px; background: #2D1621; border: 1px solid #FF5C34; border-radius: 14px; box-shadow: 0 14px 34px rgba(0, 0, 0, 0.6); padding: 8px 10px 10px 12px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px; z-index: 15">
+        <div style="display: flex; align-items: center; justify-content: space-between">
+          <span style="font-size: 10px; font-weight: 800; letter-spacing: 0.14em; color: #FF8A6A">{{fltTitle}}</span>
+          <button onClick="{{closeFlt}}" aria-label="Close filter panel" style="width: 22px; height: 22px; border-radius: 6px; border: none; background: #3A1F2B; color: #EAF6FF; padding: 0; display: flex; align-items: center; justify-content: center">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+          </button>
+        </div>
+        <div style="display: flex; gap: 10px">
+          <sc-for list="{{fknobs}}" as="k" hint-placeholder-count="2">
+            <div style="flex: 1; display: flex; align-items: center; gap: 6px; position: relative; height: 48px">
+              <svg width="42" height="42" viewBox="0 0 64 64" role="img" aria-label="{{k.aria}}" style="flex: none">
+                <circle cx="32" cy="32" r="26" fill="none" stroke="#4F2D3D" stroke-width="6" stroke-linecap="round" stroke-dasharray="122.5 200" transform="rotate(135 32 32)"></circle>
+                <circle cx="32" cy="32" r="26" fill="none" stroke="{{k.color}}" stroke-width="6" stroke-linecap="round" stroke-dasharray="{{k.dash}}" transform="rotate(135 32 32)"></circle>
+                <circle cx="32" cy="32" r="16" fill="#3A1F2B" stroke="#4F2D3D" stroke-width="1"></circle>
+                <line x1="32" y1="32" x2="{{k.px}}" y2="{{k.py}}" stroke="#EAF6FF" stroke-width="4" stroke-linecap="round"></line>
+              </svg>
+              <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.1em; color: #A9C3D6; white-space: nowrap">{{k.label}}</span>
+                <span style="font-size: 12px; white-space: nowrap">{{k.value}}</span>
+              </div>
+              <input type="range" min="0" max="100" step="1" value="{{k.v100}}" onChange="{{k.set}}" aria-label="{{k.label}}" title="Drag left / right" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize">
+            </div>
+          </sc-for>
+        </div>
+        <span style="position: absolute; left: 22px; bottom: -7px; width: 12px; height: 12px; background: #2D1621; border-right: 1px solid #FF5C34; border-bottom: 1px solid #FF5C34; transform: rotate(45deg)" aria-hidden="true"></span>
+      </div>
+    </sc-if>
     <div role="radiogroup" aria-label="Gate mode" style="display: flex; flex-direction: column; gap: 2px; width: 50px; flex: none; margin-right: 8px">
       <sc-for list="{{modes}}" as="md" hint-placeholder-count="3">
         <button role="radio" aria-checked="{{md.on}}" onClick="{{md.pick}}" title="{{md.title}}" style="height: 20px; border-radius: 5px; border: none; background: {{md.bg}}; color: {{md.fg}}; font-size: 9px; font-weight: 800; letter-spacing: 0.1em; padding: 0">{{md.label}}</button>
@@ -286,7 +315,7 @@ input::placeholder{color:#8FA7BA}
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#D7EFFF","options":["#D7EFFF","#E9F056","#C3D0B5"]},"hot":{"editor":"color","default":"#FF5C34","options":["#FF5C34","#E9F056","#D7EFFF"]},"mix":{"editor":"range","default":100,"min":0,"max":100,"step":1,"unit":"%"},"mode":{"editor":"enum","options":["VOL","LP","HP"],"default":"VOL"},"menuOpen":{"editor":"boolean","default":true},"chainOpen":{"editor":"boolean","default":false},"chainOn":{"editor":"boolean","default":false},"$preview":{"width":1040,"height":380}}'>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#D7EFFF","options":["#D7EFFF","#E9F056","#C3D0B5"]},"hot":{"editor":"color","default":"#FF5C34","options":["#FF5C34","#E9F056","#D7EFFF"]},"mix":{"editor":"range","default":100,"min":0,"max":100,"step":1,"unit":"%"},"mode":{"editor":"enum","options":["VOL","LP","HP"],"default":"VOL"},"menuOpen":{"editor":"boolean","default":true},"chainOpen":{"editor":"boolean","default":false},"chainOn":{"editor":"boolean","default":false},"filterOpen":{"editor":"boolean","default":true},"$preview":{"width":1040,"height":380}}'>
 class Component extends DCLogic {
   renderVals() {
     const accent = this.props.accent ?? '#D7EFFF';
@@ -518,19 +547,23 @@ class Component extends DCLogic {
       knob('STEREO', 0.25, '2 st', accent),
       knob('MIX', mix, V.mix + ' %', accent, false, 'mix')
     ];
-    if (mode !== 'VOL') {
-      knobs.push(knob('CUTOFF', V.freq / 100, hzLabel, hot, true, 'freq', true));
-      knobs.push(knob('RESO', V.res / 100, V.res + ' %', hot, false, 'res', true));
-    }
+    const fknobs = [
+      knob('CUTOFF', V.freq / 100, hzLabel, hot, false, 'freq'),
+      knob('RESO', V.res / 100, V.res + ' %', hot, false, 'res')
+    ];
+    const fltOpen = st.fltOpen ?? truthy(this.props.filterOpen, true);
     const modes = [
       { id: 'VOL', label: 'VOL', title: 'Gate the volume' },
-      { id: 'LP', label: 'LPF', title: 'Gate a low-pass filter: closed steps get dark' },
-      { id: 'HP', label: 'HPF', title: 'Gate a high-pass filter: closed steps get thin' }
+      { id: 'LP', label: 'LPF', title: 'Gate a low-pass filter: closed steps get dark. Click again to show / hide the filter panel' },
+      { id: 'HP', label: 'HPF', title: 'Gate a high-pass filter: closed steps get thin. Click again to show / hide the filter panel' }
     ].map((m) => ({
       label: m.label, title: m.title, on: m.id === mode,
       bg: m.id === mode ? hot : '#3A1F2B',
       fg: m.id === mode ? '#22101A' : '#C4DDEE',
-      pick: () => setVar({ mode: m.id })
+      pick: () => {
+        if (m.id === mode && m.id !== 'VOL') this.setState({ fltOpen: !fltOpen });
+        else setVar({ mode: m.id }, { fltOpen: m.id !== 'VOL' });
+      }
     }));
 
     // ---------- variation chain (panel hidden by default, chain OFF by default)
@@ -558,7 +591,10 @@ class Component extends DCLogic {
     }));
 
     return {
-      accent, hot, open, steps, cats, items, sig, knobs, modes,
+      accent, hot, open, steps, cats, items, sig, knobs, modes, fknobs,
+      fltShow: mode !== 'VOL' && fltOpen,
+      fltTitle: mode === 'LP' ? 'LOW-PASS FILTER' : 'HIGH-PASS FILTER',
+      closeFlt: () => this.setState({ fltOpen: false }),
       rootH: chainOpen ? '476' : '380',
       inPath: band(up, dn),
       outPath: band(upO, dnO),
