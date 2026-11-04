@@ -1,7 +1,8 @@
 name: Build plugin
 
 # Every push to main builds macOS (VST3 + AU, Apple Silicon + Intel) and Windows (VST3).
-# Pushing a tag like v2.0.0 also publishes a GitHub Release with both zips for download.
+# Every push to main (or a v* tag) also publishes the GitHub Release v<VERSION from CMakeLists.txt>
+# with both zips, so the Releases page always has the newest build.
 on:
   push:
     branches: [main]
@@ -66,10 +67,22 @@ jobs:
           path: dist/UltimateTranceGate-Windows.zip
 
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'push'
     needs: [macos, windows]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Release tag
+        id: tag
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "name=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+          else
+            V=$(grep -Eo 'project\(UltimateTranceGate VERSION [0-9.]+' CMakeLists.txt | awk '{print $3}')
+            echo "name=v$V" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/download-artifact@v4
         with:
           path: dist
@@ -77,7 +90,10 @@ jobs:
 
       - uses: softprops/action-gh-release@v2
         with:
-          name: Ultimate Trance Gate ${{ github.ref_name }}
+          tag_name: ${{ steps.tag.outputs.name }}
+          target_commitish: ${{ github.sha }}
+          make_latest: true
+          name: Ultimate Trance Gate ${{ steps.tag.outputs.name }}
           body: |
             **Ultimate Trance Gate** — created by mikita_laurenau ([Instagram](https://www.instagram.com/mikita_laurenau/))
 
