@@ -125,7 +125,7 @@ TranceGateEditor::TranceGateEditor (TranceGateProcessor& p)
     credit.setButtonText ("created by mikita_laurenau");
     credit.setURL (URL ("https://www.instagram.com/mikita_laurenau/"));
     credit.setFont (tg::ui::font (11.5f, 500), false, Justification::centredLeft);
-    credit.setTooltip ("instagram.com/mikita_laurenau");
+    credit.setTooltip (tg::tips::credit());
     addAndMakeVisible (credit);
 
     prevPreset.setTooltip (tg::tips::prevPreset());

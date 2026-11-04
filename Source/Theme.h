@@ -194,21 +194,35 @@ public:
         g.fillRoundedRectangle (thumb.toFloat().reduced (2.0f), 3.0f);
     }
 
-    // Tooltips: system font (Cyrillic), left aligned, orange stripe
-    static juce::TextLayout layoutTip (const juce::String& text, juce::Colour c)
+    // Tooltips: system font (Cyrillic), first line = bold title, then the explanation.
+    // Paragraphs are separated by a small gap; text wraps at a fixed width so every tip looks alike.
+    static juce::TextLayout layoutTip (const juce::String& text, juce::Colour titleCol, juce::Colour bodyCol)
     {
         juce::AttributedString s;
         s.setJustification (juce::Justification::topLeft);
-        s.setLineSpacing (2.0f);
-        s.append (text, systemFont (13.0f), c);
+        s.setLineSpacing (2.5f);
+        const auto lines = juce::StringArray::fromLines (text.trim());
+        if (lines.size() > 1)
+        {
+            s.append (lines[0].trim() + "\n", systemFont (13.5f, true), titleCol);
+            for (int i = 1; i < lines.size(); ++i)
+            {
+                s.append ("\n", systemFont (i == 1 ? 3.0f : 2.0f), bodyCol);   // gap before the paragraph
+                s.append (lines[i].trim() + (i < lines.size() - 1 ? "\n" : ""), systemFont (12.5f), bodyCol);
+            }
+        }
+        else
+        {
+            s.append (text.trim(), systemFont (12.5f), bodyCol);
+        }
         juce::TextLayout tl;
-        tl.createLayout (s, 460.0f);
+        tl.createLayout (s, 380.0f);
         return tl;
     }
 
     juce::Rectangle<int> getTooltipBounds (const juce::String& tip, juce::Point<int> pos, juce::Rectangle<int> parent) override
     {
-        const auto tl = layoutTip (tip, juce::Colours::white);
+        const auto tl = layoutTip (tip, juce::Colours::white, juce::Colours::white);
         const int w = (int) std::ceil (tl.getWidth()) + 26, h = (int) std::ceil (tl.getHeight()) + 18;
         const int px = pos.x > parent.getCentreX() ? pos.x - (w + 12) : pos.x + 12;
         const int py = pos.y > parent.getCentreY() ? pos.y - (h + 8)  : pos.y + 18;
@@ -224,7 +238,7 @@ public:
         g.drawRect (r, 1.0f);
         g.setColour (col::orange);
         g.fillRect (r.withWidth (3.0f));
-        layoutTip (text, col::text).draw (g, r.reduced (14.0f, 9.0f));
+        layoutTip (text, col::text, col::text2).draw (g, r.reduced (14.0f, 9.0f));
     }
 };
 

@@ -80,6 +80,42 @@ static void writePng (Component& c, const File& f)
     std::cout << "  screenshot: " << f.getFileName() << std::endl;
 }
 
+static void collectTips (Component& c, StringArray& tips)
+{
+    for (auto* ch : c.getChildren())
+    {
+        if (auto* tc = dynamic_cast<TooltipClient*> (ch))
+            if (ch->isVisible() && tc->getTooltip().isNotEmpty()) tips.addIfNotAlreadyThere (tc->getTooltip());
+        collectTips (*ch, tips);
+    }
+}
+
+// Every tooltip drawn exactly as the plug-in draws it, stacked in two columns.
+static void writeTipSheet (Component& editor, const StringArray& tips, const File& f)
+{
+    auto& lf = editor.getLookAndFeel();
+    const Rectangle<int> parent (0, 0, 4000, 4000);
+    Array<Rectangle<int>> sizes;
+    for (auto& t : tips) sizes.add (lf.getTooltipBounds (t, {}, parent));
+    const int colW = 520, gap = 10;
+    int y[2] = { gap, gap };
+    Array<Point<int>> at;
+    for (auto& r : sizes) { const int c = y[0] <= y[1] ? 0 : 1; at.add ({ gap + c * (colW + gap), y[c] }); y[c] += r.getHeight() + gap; }
+    Image img (Image::ARGB, 2 * (colW + gap) + gap, jmax (y[0], y[1]), true);
+    Graphics g (img);
+    g.fillAll (Colour (0xff22101a));
+    for (int i = 0; i < tips.size(); ++i)
+    {
+        Graphics::ScopedSaveState s (g);
+        g.setOrigin (at[i]);
+        lf.drawTooltip (g, tips[i], sizes[i].getWidth(), sizes[i].getHeight());
+    }
+    f.deleteFile();
+    PNGImageFormat png;
+    if (auto os = f.createOutputStream()) png.writeImageToStream (img, *os);
+    std::cout << "  tooltips: " << tips.size() << " -> " << f.getFileName() << std::endl;
+}
+
 static void collectMissingTips (Component& c, StringArray& missing, const String& path)
 {
     for (auto* ch : c.getChildren())
@@ -353,6 +389,20 @@ int main (int argc, char** argv)
         check (missing.isEmpty(), "every control has a tooltip");
 
         writePng (*ed, outDir.getChildFile ("ui-main.png"));
+        {
+            StringArray tips;
+            collectTips (*ed, tips);
+            editor->showFilterPanel (true);   // filter panel tips too
+            proc.selectMode (TranceGateProcessor::ModeLowPass);
+            for (int i = 0; i < 2; ++i) MessageManager::getInstance()->runDispatchLoopUntil (40);
+            collectTips (*ed, tips);
+            proc.selectMode (TranceGateProcessor::ModeVolume);
+            editor->showFilterPanel (false);
+            for (int i = 0; i < 2; ++i) MessageManager::getInstance()->runDispatchLoopUntil (40);
+            for (auto t : { tg::tips::ratchetLane(), tg::tips::tieLane(), tg::tips::signal(), tg::tips::star() })
+                tips.addIfNotAlreadyThere (t);
+            writeTipSheet (*ed, tips, outDir.getChildFile ("tooltips.png"));
+        }
         editor->showPresetBrowser (true);
         for (int i = 0; i < 2; ++i) MessageManager::getInstance()->runDispatchLoopUntil (40);
         writePng (*ed, outDir.getChildFile ("ui-presets.png"));
