@@ -13,114 +13,153 @@
 body{margin:0}
 a{color:#A9C3D6}a:hover{color:#D7EFFF}
 button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+input::placeholder{color:#8FA7BA}
 </style>
 </helmet>
-<div style="width: 1040px; height: 380px; box-sizing: border-box; background: #22101A; color: #EAF6FF; font-family: 'Figtree', system-ui, sans-serif; font-variant-numeric: tabular-nums; padding: 12px 20px 14px 20px; display: flex; flex-direction: column; gap: 8px; overflow: hidden">
+<div style="width: 1040px; height: {{rootH}}px; box-sizing: border-box; background: #22101A; color: #EAF6FF; font-family: 'Figtree', system-ui, sans-serif; font-variant-numeric: tabular-nums; padding: 12px 20px 14px 20px; display: flex; flex-direction: column; gap: 8px; overflow: hidden">
 
-  <!-- Header: brand · slot dropdown · preset browser · copy/paste -->
-  <div style="display: flex; align-items: center; gap: 12px; height: 40px; position: relative; z-index: 5">
-    <div style="display: flex; flex-direction: column; gap: 2px; width: 236px; flex: none">
+  <!-- ===================== Header ===================== -->
+  <div style="display: flex; align-items: center; gap: 10px; height: 40px; position: relative; z-index: 5; flex: none">
+    <div style="display: flex; flex-direction: column; gap: 2px; width: 214px; flex: none">
       <div style="font-size: 21px; font-weight: 800; letter-spacing: -0.02em; line-height: 1">Ultimate Trance <span style="color: #FF5C34">Gate</span></div>
       <a href="https://www.instagram.com/mikita_laurenau/" style="font-size: 11px; text-decoration: none">created by mikita_laurenau</a>
     </div>
 
-    <!-- Unified preset browser -->
+    <!-- Preset browser -->
     <div style="position: relative; flex: 1; min-width: 0; display: flex; align-items: center; gap: 4px">
-      <button onClick="{{prevPreset}}" aria-label="Previous preset" style="width: 30px; height: 38px; border-radius: 8px; border: 1px solid #4F2D3D; background: #2D1621; color: #EAF6FF; display: flex; align-items: center; justify-content: center; padding: 0; flex: none">
+      <button onClick="{{prevPreset}}" aria-label="Previous preset" style="width: 28px; height: 38px; border-radius: 8px; border: 1px solid #4F2D3D; background: #2D1621; color: #EAF6FF; display: flex; align-items: center; justify-content: center; padding: 0; flex: none">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
       </button>
-      <button onClick="{{toggle}}" aria-expanded="{{open}}" aria-haspopup="listbox" aria-label="Presets" style="flex: 1; min-width: 0; height: 38px; border-radius: 8px; border: 1px solid {{triggerBorder}}; background: #2D1621; color: #EAF6FF; display: flex; align-items: center; gap: 9px; padding: 0 10px; text-align: left">
+      <button onClick="{{toggle}}" aria-expanded="{{open}}" aria-haspopup="listbox" aria-label="Presets" style="flex: 1; min-width: 0; height: 38px; border-radius: 8px; border: 1px solid {{triggerBorder}}; background: #2D1621; color: #EAF6FF; display: flex; align-items: center; gap: 8px; padding: 0 9px; text-align: left">
         <sc-if value="{{cur.hasBadge}}" hint-placeholder-val="{{true}}">
-          <span style="width: 24px; height: 24px; border-radius: 6px; background: {{hot}}; color: #22101A; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; flex: none">{{cur.badge}}</span>
+          <span style="width: 22px; height: 22px; border-radius: 6px; background: {{hot}}; color: #22101A; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex: none">{{cur.badge}}</span>
         </sc-if>
-        <span style="font-size: 9px; font-weight: 600; letter-spacing: 0.12em; color: #22101A; background: {{accent}}; padding: 3px 6px; border-radius: 4px; flex: none; text-transform: uppercase">{{cur.cat}}</span>
-        <span style="flex: 1; min-width: 0; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{cur.name}}</span>
-        <span style="display: flex; gap: 1px; align-items: flex-end; height: 14px; width: 100px; flex: none" aria-hidden="true">
+        <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.1em; color: #22101A; background: {{accent}}; padding: 3px 6px; border-radius: 4px; flex: none; text-transform: uppercase; max-width: 96px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{cur.cat}}</span>
+        <span style="flex: 1; min-width: 0; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{cur.name}}</span>
+        <sc-if value="{{cur.fav}}" hint-placeholder-val="{{false}}">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="#FF5C34" stroke="#FF5C34" stroke-width="1.5" stroke-linejoin="round" aria-label="Favorite" role="img" style="flex: none"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path></svg>
+        </sc-if>
+        <span style="display: flex; gap: 1px; align-items: flex-end; height: 14px; width: 98px; flex: none" aria-hidden="true">
           <sc-for list="{{cur.mini}}" as="m" hint-placeholder-count="16">
             <span style="width: {{m.w}}px; height: {{m.h}}px; background: {{m.c}}; border-radius: 1px; flex: none"></span>
           </sc-for>
         </span>
-        <span style="font-size: 10px; color: #A9C3D6; width: 62px; text-align: right; flex: none">{{cur.grid}}</span>
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#D7EFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; transform: rotate({{chevron}}deg)"><path d="M6 9l6 6 6-6"></path></svg>
       </button>
-      <button onClick="{{nextPreset}}" aria-label="Next preset" style="width: 30px; height: 38px; border-radius: 8px; border: 1px solid #4F2D3D; background: #2D1621; color: #EAF6FF; display: flex; align-items: center; justify-content: center; padding: 0; flex: none">
+      <button onClick="{{nextPreset}}" aria-label="Next preset" style="width: 28px; height: 38px; border-radius: 8px; border: 1px solid #4F2D3D; background: #2D1621; color: #EAF6FF; display: flex; align-items: center; justify-content: center; padding: 0; flex: none">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
       </button>
 
+      <!-- Preset menu -->
       <sc-if value="{{open}}" hint-placeholder-val="{{true}}">
-        <div style="position: absolute; top: 44px; left: 34px; width: 640px; height: 300px; background: #2D1621; border: 1px solid #64394C; border-radius: 12px; box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6); display: flex; overflow: hidden; z-index: 20">
-          <div role="tablist" aria-label="Preset categories" style="width: 186px; flex: none; overflow-y: auto; border-right: 1px solid #4F2D3D; padding: 6px; display: flex; flex-direction: column; gap: 1px; box-sizing: border-box">
-            <sc-for list="{{cats}}" as="c" hint-placeholder-count="16">
-              <button role="tab" aria-selected="{{c.selected}}" onClick="{{c.pick}}" style="height: 28px; flex: none; border-radius: 6px; border: none; background: {{c.bg}}; color: {{c.fg}}; display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 0 8px; font-size: 12px; font-weight: {{c.weight}}; text-align: left">
+        <div style="position: absolute; top: 44px; left: 32px; width: 660px; height: 304px; background: #2D1621; border: 1px solid #64394C; border-radius: 14px; box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6); display: flex; overflow: hidden; z-index: 20">
+          <div role="tablist" aria-label="Preset categories" style="width: 184px; flex: none; overflow-y: auto; border-right: 1px solid #4F2D3D; padding: 6px; display: flex; flex-direction: column; gap: 1px; box-sizing: border-box">
+            <sc-for list="{{cats}}" as="c" hint-placeholder-count="18">
+              <button role="tab" aria-selected="{{c.selected}}" onClick="{{c.pick}}" style="height: 27px; flex: none; border-radius: 6px; border: none; background: {{c.bg}}; color: {{c.fg}}; display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 0 8px; font-size: 12px; font-weight: {{c.weight}}; text-align: left">
                 <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{c.name}}</span>
                 <span style="font-size: 10px; color: #A9C3D6; flex: none">{{c.count}}</span>
               </button>
             </sc-for>
           </div>
-          <div role="listbox" aria-label="Presets" style="flex: 1; min-width: 0; overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 2px; box-sizing: border-box">
-            <div style="display: flex; justify-content: space-between; padding: 4px 8px 6px 8px; font-size: 10px; font-weight: 600; letter-spacing: 0.14em; color: #A9C3D6; text-transform: uppercase; flex: none">
-              <span>{{viewName}}</span>
-              <span style="letter-spacing: 0; text-transform: none">{{viewHint}}</span>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+            <div style="padding: 8px 8px 4px 8px; display: flex; flex-direction: column; gap: 6px; flex: none">
+              <label style="display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 10px; border-radius: 8px; background: #3A1F2B; border: 1px solid {{searchBorder}}">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#A9C3D6" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+                <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Search presets</span>
+                <input type="search" value="{{q}}" onChange="{{setQ}}" placeholder="Search 240 presets: rage, triplet, stutter…" style="flex: 1; min-width: 0; height: 26px; border: none; outline: none; background: transparent; color: #EAF6FF; font-size: 12px">
+              </label>
+              <div style="display: flex; justify-content: space-between; padding: 0 2px; font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: #A9C3D6; text-transform: uppercase">
+                <span>{{viewName}}</span>
+                <span style="letter-spacing: 0; text-transform: none; font-weight: 500">{{viewHint}}</span>
+              </div>
             </div>
-            <sc-for list="{{items}}" as="it" hint-placeholder-count="8">
-              <button role="option" aria-selected="{{it.selected}}" onClick="{{it.pick}}" style="height: 38px; flex: none; border-radius: 8px; border: none; background: {{it.bg}}; color: #EAF6FF; display: flex; align-items: center; gap: 10px; padding: 0 8px; text-align: left">
-                <sc-if value="{{it.hasBadge}}" hint-placeholder-val="{{false}}">
-                  <span style="width: 22px; height: 22px; border-radius: 6px; background: {{it.badgeBg}}; color: {{it.badgeFg}}; font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: center; flex: none">{{it.badge}}</span>
-                </sc-if>
-                <span style="flex: 1; min-width: 0; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{it.name}}</span>
-                <span style="display: flex; gap: 1px; align-items: flex-end; height: 16px; width: 100px; flex: none" aria-hidden="true">
-                  <sc-for list="{{it.mini}}" as="m" hint-placeholder-count="16">
-                    <span style="width: {{m.w}}px; height: {{m.h}}px; background: {{m.c}}; border-radius: 1px; flex: none"></span>
-                  </sc-for>
-                </span>
-                <span style="font-size: 10px; color: #A9C3D6; width: 64px; text-align: right; flex: none">{{it.grid}}</span>
-              </button>
-            </sc-for>
+            <div role="listbox" aria-label="Presets" style="flex: 1; min-height: 0; overflow-y: auto; padding: 0 6px 6px 6px; display: flex; flex-direction: column; gap: 2px">
+              <sc-if value="{{noItems}}" hint-placeholder-val="{{false}}">
+                <div style="padding: 18px 10px; font-size: 12px; color: #A9C3D6">{{emptyText}}</div>
+              </sc-if>
+              <sc-for list="{{items}}" as="it" hint-placeholder-count="8">
+                <div style="height: 36px; flex: none; border-radius: 8px; background: {{it.bg}}; display: flex; align-items: center">
+                  <button role="option" aria-selected="{{it.selected}}" onClick="{{it.pick}}" style="flex: 1; min-width: 0; height: 36px; border: none; background: transparent; color: #EAF6FF; display: flex; align-items: center; gap: 10px; padding: 0 4px 0 8px; text-align: left">
+                    <sc-if value="{{it.hasBadge}}" hint-placeholder-val="{{false}}">
+                      <span style="width: 22px; height: 22px; border-radius: 6px; background: {{it.badgeBg}}; color: {{it.badgeFg}}; font-weight: 800; font-size: 11px; display: flex; align-items: center; justify-content: center; flex: none">{{it.badge}}</span>
+                    </sc-if>
+                    <span style="flex: 1; min-width: 0; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{it.name}}</span>
+                    <span style="display: flex; gap: 1px; align-items: flex-end; height: 16px; width: 98px; flex: none" aria-hidden="true">
+                      <sc-for list="{{it.mini}}" as="m" hint-placeholder-count="16">
+                        <span style="width: {{m.w}}px; height: {{m.h}}px; background: {{m.c}}; border-radius: 1px; flex: none"></span>
+                      </sc-for>
+                    </span>
+                    <span style="font-size: 10px; color: #A9C3D6; width: 84px; text-align: right; flex: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{it.meta}}</span>
+                  </button>
+                  <button onClick="{{it.star}}" aria-pressed="{{it.fav}}" aria-label="{{it.starLabel}}" style="width: 30px; height: 30px; border: none; background: transparent; padding: 0; display: flex; align-items: center; justify-content: center; flex: none">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="{{it.starFill}}" stroke="{{it.starStroke}}" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path></svg>
+                  </button>
+                </div>
+              </sc-for>
+            </div>
           </div>
         </div>
       </sc-if>
     </div>
 
-    <div role="group" aria-label="Variations A / B / C" title="Three variations of the whole setup: pattern + knobs. Switch to compare." style="display: flex; align-items: center; gap: 2px; height: 38px; box-sizing: border-box; padding: 3px; background: #2D1621; border: 1px solid #4F2D3D; border-radius: 10px; flex: none">
-      <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.14em; color: #A9C3D6; padding: 0 6px 0 5px">VAR</span>
+    <!-- Variations A/B/C -->
+    <div role="group" aria-label="Variations A / B / C" style="display: flex; align-items: center; gap: 2px; height: 38px; box-sizing: border-box; padding: 3px; background: #2D1621; border: 1px solid #4F2D3D; border-radius: 10px; flex: none">
+      <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.14em; color: #A9C3D6; padding: 0 5px">VAR</span>
       <sc-for list="{{varBtns}}" as="vb" hint-placeholder-count="3">
         <button aria-pressed="{{vb.on}}" onClick="{{vb.pick}}" aria-label="{{vb.aria}}" style="width: 30px; height: 30px; border-radius: 7px; border: none; background: {{vb.bg}}; color: {{vb.fg}}; font-weight: 800; font-size: 13px; padding: 0">{{vb.key}}</button>
       </sc-for>
     </div>
+
+    <!-- Chain panel toggle -->
+    <button onClick="{{toggleChain}}" aria-expanded="{{chainOpen}}" aria-label="Variation chain panel" style="height: 38px; padding: 0 10px; border-radius: 10px; border: 1px solid {{chainBtnBorder}}; background: #2D1621; color: #EAF6FF; display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; flex: none">
+      <span style="width: 7px; height: 7px; border-radius: 4px; background: {{chainDot}}" aria-hidden="true"></span>
+      CHAIN
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#D7EFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform: rotate({{chainChevron}}deg)"><path d="M6 9l6 6 6-6"></path></svg>
+    </button>
   </div>
 
-  <!-- Pattern controls in one row -->
-  <div style="display: flex; align-items: center; gap: 6px; height: 28px">
-    <div style="display: flex; align-items: center; gap: 4px; height: 28px; padding: 0 6px 0 9px; border-radius: 7px; background: #2D1621; border: 1px solid #4F2D3D">
-      <span style="font-size: 9px; font-weight: 600; letter-spacing: 0.14em; color: #A9C3D6">STEPS</span>
+  <!-- ===================== Pattern row ===================== -->
+  <div style="display: flex; align-items: center; gap: 6px; height: 28px; flex: none">
+    <button onClick="{{undo}}" aria-label="Undo" title="Undo (Cmd+Z)" style="width: 30px; height: 28px; border-radius: 7px; border: 1px solid #4F2D3D; background: #2D1621; color: {{undoColor}}; padding: 0; display: flex; align-items: center; justify-content: center">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"></path><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"></path></svg>
+    </button>
+    <button onClick="{{redo}}" aria-label="Redo" title="Redo (Cmd+Shift+Z)" style="width: 30px; height: 28px; border-radius: 7px; border: 1px solid #4F2D3D; background: #2D1621; color: {{redoColor}}; padding: 0; display: flex; align-items: center; justify-content: center">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 14l5-5-5-5"></path><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"></path></svg>
+    </button>
+    <div style="display: flex; align-items: center; gap: 4px; height: 28px; padding: 0 6px 0 9px; border-radius: 7px; background: #2D1621; border: 1px solid #4F2D3D; box-sizing: border-box">
+      <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.14em; color: #A9C3D6">STEPS</span>
       <button aria-label="Fewer steps" style="width: 20px; height: 20px; border-radius: 5px; border: none; background: #3A1F2B; color: #EAF6FF; padding: 0">–</button>
       <span style="font-size: 12px; width: 20px; text-align: center">{{cur.len}}</span>
       <button aria-label="More steps" style="width: 20px; height: 20px; border-radius: 5px; border: none; background: #3A1F2B; color: #EAF6FF; padding: 0">+</button>
     </div>
     <button style="height: 28px; padding: 0 8px 0 9px; border-radius: 7px; background: #2D1621; border: 1px solid #4F2D3D; color: #EAF6FF; display: flex; align-items: center; gap: 6px">
-      <span style="font-size: 9px; font-weight: 600; letter-spacing: 0.14em; color: #A9C3D6">RATE</span>
+      <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.14em; color: #A9C3D6">RATE</span>
       <span style="font-size: 12px">{{cur.res}}</span>
       <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#D7EFFF" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
     </button>
-    <div style="display: flex; align-items: center; gap: 8px; height: 28px; padding: 0 9px; border-radius: 7px; background: #2D1621; border: 1px solid #4F2D3D">
-      <span style="font-size: 9px; font-weight: 600; letter-spacing: 0.14em; color: #A9C3D6">EUCLID</span>
+    <div style="display: flex; align-items: center; gap: 8px; height: 28px; padding: 0 9px; border-radius: 7px; background: #2D1621; border: 1px solid #4F2D3D; box-sizing: border-box">
+      <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.14em; color: #A9C3D6">EUCLID</span>
       <span style="font-size: 12px">5<span style="color: #A9C3D6"> hits</span></span>
       <span style="font-size: 12px">0<span style="color: #A9C3D6"> rot</span></span>
     </div>
-    <button style="height: 28px; padding: 0 10px; border-radius: 7px; border: 1px solid #FF5C34; background: #FF5C34; color: #22101A; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; display: flex; align-items: center; gap: 5px">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5"></path><path d="M4 20L21 3"></path><path d="M21 16v5h-5"></path><path d="M15 15l6 6"></path><path d="M4 4l5 5"></path></svg>
+    <button style="height: 28px; padding: 0 10px; border-radius: 7px; border: 1px solid #FF5C34; background: #FF5C34; color: #22101A; font-size: 11px; font-weight: 800; letter-spacing: 0.1em; display: flex; align-items: center; gap: 5px">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5"></path><path d="M4 20L21 3"></path><path d="M21 16v5h-5"></path><path d="M15 15l6 6"></path><path d="M4 4l5 5"></path></svg>
       RANDOM
     </button>
     <div style="flex: 1"></div>
     <sc-for list="{{tools}}" as="t" hint-placeholder-count="8">
-      <button style="height: 28px; min-width: 38px; padding: 0 8px; border-radius: 7px; border: 1px solid #4F2D3D; background: #2D1621; color: #EAF6FF; font-size: 10px; font-weight: 600; letter-spacing: 0.08em">{{t}}</button>
+      <button style="height: 28px; min-width: 34px; padding: 0 7px; border-radius: 7px; border: 1px solid #4F2D3D; background: #2D1621; color: #EAF6FF; font-size: 10px; font-weight: 700; letter-spacing: 0.06em">{{t}}</button>
     </sc-for>
+    <button draggable="true" aria-label="Drag this rhythm into Ableton as a MIDI clip" title="Drag into Ableton: creates a MIDI clip with this rhythm" style="height: 28px; padding: 0 9px 0 7px; border-radius: 7px; border: 1px dashed #D7EFFF; background: #3A1F2B; color: #D7EFFF; font-size: 10px; font-weight: 800; letter-spacing: 0.1em; display: flex; align-items: center; gap: 6px; cursor: grab">
+      <svg width="10" height="14" viewBox="0 0 10 14" fill="#D7EFFF" aria-hidden="true"><circle cx="2.5" cy="2.5" r="1.4"></circle><circle cx="7.5" cy="2.5" r="1.4"></circle><circle cx="2.5" cy="7" r="1.4"></circle><circle cx="7.5" cy="7" r="1.4"></circle><circle cx="2.5" cy="11.5" r="1.4"></circle><circle cx="7.5" cy="11.5" r="1.4"></circle></svg>
+      MIDI
+    </button>
   </div>
 
-  <!-- Step grid -->
-  <div style="background: #2D1621; border: 1px solid #4F2D3D; border-radius: 16px; padding: 8px 10px 6px 10px; display: flex; flex-direction: column; gap: 4px">
+  <!-- ===================== Step grid ===================== -->
+  <div style="background: #2D1621; border: 1px solid #4F2D3D; border-radius: 16px; padding: 8px 10px 6px 10px; display: flex; flex-direction: column; gap: 4px; flex: none">
     <div style="position: relative; height: 128px">
-      <!-- layer 1: step columns -->
       <div style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; display: flex">
         <sc-for list="{{steps}}" as="s" hint-placeholder-count="16">
           <div style="flex: 1; height: 100%; background: {{s.bg}}; position: relative">
@@ -128,7 +167,6 @@ button{font-family:inherit;cursor:pointer}
           </div>
         </sc-for>
       </div>
-      <!-- layer 2: audio passing through: input ghost + gated output -->
       <sc-if value="{{sig}}" hint-placeholder-val="{{true}}">
         <svg viewBox="0 0 {{envW}} 100" preserveAspectRatio="none" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none" aria-hidden="true">
           <path d="{{inPath}}" fill="#8E6F7E" fill-opacity="0.5"></path>
@@ -136,7 +174,6 @@ button{font-family:inherit;cursor:pointer}
           <line x1="0" y1="50" x2="{{envW}}" y2="50" stroke="#22101A" stroke-opacity="0.6" stroke-width="1" vector-effect="non-scaling-stroke"></line>
         </svg>
       </sc-if>
-      <!-- layer 3: step bars -->
       <div style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; display: flex">
         <sc-for list="{{steps}}" as="s" hint-placeholder-count="16">
           <div style="flex: 1; height: 100%; box-sizing: border-box; padding: 0 {{s.pad}}px; display: flex; align-items: flex-end">
@@ -150,21 +187,19 @@ button{font-family:inherit;cursor:pointer}
           </div>
         </sc-for>
       </div>
-      <!-- layer 4: gate envelope -->
       <svg viewBox="0 0 {{envW}} 100" preserveAspectRatio="none" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none" aria-hidden="true">
-        <polyline points="{{env}}" fill="none" stroke="#FF5C34" stroke-opacity="1" stroke-width="1.5" vector-effect="non-scaling-stroke"></polyline>
+        <polyline points="{{env}}" fill="none" stroke="#FF5C34" stroke-width="1.5" vector-effect="non-scaling-stroke"></polyline>
       </svg>
-      <!-- legend + toggle -->
-      <div style="position: absolute; top: 4px; right: 6px; display: flex; align-items: center; gap: 8px; background: rgba(34, 16, 26, 0.75); border-radius: 6px; padding: 3px 4px 3px 8px">
+      <div style="position: absolute; top: 4px; right: 6px; display: flex; align-items: center; gap: 8px; background: rgba(34, 16, 26, 0.8); border-radius: 6px; padding: 3px 4px 3px 8px">
         <span style="display: flex; align-items: center; gap: 4px; font-size: 9px; letter-spacing: 0.12em; color: #C4DDEE"><span style="width: 10px; height: 6px; border-radius: 2px; background: #8E6F7E"></span>INPUT</span>
-        <span style="display: flex; align-items: center; gap: 4px; font-size: 9px; letter-spacing: 0.12em; color: #C4DDEE"><span style="width: 10px; height: 6px; border-radius: 2px; background: {{accent}}"></span>OUTPUT</span>
-        <button onClick="{{toggleSig}}" aria-pressed="{{sig}}" style="height: 18px; padding: 0 7px; border-radius: 4px; border: 1px solid {{sigBorder}}; background: transparent; color: {{sigColor}}; font-size: 9px; font-weight: 700; letter-spacing: 0.12em">SIGNAL</button>
+        <span style="display: flex; align-items: center; gap: 4px; font-size: 9px; letter-spacing: 0.12em; color: #C4DDEE"><span style="width: 10px; height: 6px; border-radius: 2px; background: {{accent}}"></span>{{outLabel}}</span>
+        <button onClick="{{toggleSig}}" aria-pressed="{{sig}}" style="height: 18px; padding: 0 7px; border-radius: 4px; border: 1px solid {{sigBorder}}; background: transparent; color: {{sigColor}}; font-size: 9px; font-weight: 800; letter-spacing: 0.12em">SIGNAL</button>
       </div>
     </div>
     <div style="display: flex; align-items: center; height: 18px">
       <sc-for list="{{steps}}" as="s" hint-placeholder-count="16">
         <div style="flex: 1; padding: 0 2px; box-sizing: border-box">
-          <button style="width: 100%; height: 17px; border-radius: 4px; border: none; background: {{s.rBg}}; color: {{s.rFg}}; font-size: 9px; font-weight: 600; padding: 0">{{s.rLabel}}</button>
+          <button style="width: 100%; height: 17px; border-radius: 4px; border: none; background: {{s.rBg}}; color: {{s.rFg}}; font-size: 9px; font-weight: 800; padding: 0">{{s.rLabel}}</button>
         </div>
       </sc-for>
     </div>
@@ -182,18 +217,23 @@ button{font-family:inherit;cursor:pointer}
     </div>
   </div>
 
-  <!-- Knobs: one row -->
-  <div style="flex: 1; display: flex; align-items: center; gap: 0; background: #2D1621; border: 1px solid #4F2D3D; border-radius: 16px; padding: 0 8px">
+  <!-- ===================== Knobs ===================== -->
+  <div style="height: 76px; flex: none; display: flex; align-items: center; background: #2D1621; border: 1px solid #4F2D3D; border-radius: 16px; padding: 0 8px; box-sizing: border-box">
+    <div role="radiogroup" aria-label="Gate mode" style="display: flex; flex-direction: column; gap: 2px; width: 50px; flex: none; margin-right: 8px">
+      <sc-for list="{{modes}}" as="md" hint-placeholder-count="3">
+        <button role="radio" aria-checked="{{md.on}}" onClick="{{md.pick}}" title="{{md.title}}" style="height: 20px; border-radius: 5px; border: none; background: {{md.bg}}; color: {{md.fg}}; font-size: 9px; font-weight: 800; letter-spacing: 0.1em; padding: 0">{{md.label}}</button>
+      </sc-for>
+    </div>
     <sc-for list="{{knobs}}" as="k" hint-placeholder-count="9">
-      <div style="flex: 1; display: flex; align-items: center; gap: 6px; border-left: {{k.divider}}; padding-left: {{k.pad}}; position: relative">
-        <svg width="44" height="44" viewBox="0 0 64 64" role="img" aria-label="{{k.aria}}" style="flex: none">
+      <div style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 5px; border-left: {{k.divider}}; padding-left: {{k.pad}}; position: relative; height: 56px">
+        <svg width="40" height="40" viewBox="0 0 64 64" role="img" aria-label="{{k.aria}}" style="flex: none">
           <circle cx="32" cy="32" r="26" fill="none" stroke="#4F2D3D" stroke-width="6" stroke-linecap="round" stroke-dasharray="122.5 200" transform="rotate(135 32 32)"></circle>
           <circle cx="32" cy="32" r="26" fill="none" stroke="{{k.color}}" stroke-width="6" stroke-linecap="round" stroke-dasharray="{{k.dash}}" transform="rotate(135 32 32)"></circle>
           <circle cx="32" cy="32" r="16" fill="#3A1F2B" stroke="#4F2D3D" stroke-width="1"></circle>
           <line x1="32" y1="32" x2="{{k.px}}" y2="{{k.py}}" stroke="#FF5C34" stroke-width="4" stroke-linecap="round"></line>
         </svg>
         <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
-          <span style="font-size: 9px; font-weight: 600; letter-spacing: 0.12em; color: #A9C3D6">{{k.label}}</span>
+          <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.1em; color: {{k.labelColor}}; white-space: nowrap">{{k.label}}</span>
           <span style="font-size: 12px; white-space: nowrap">{{k.value}}</span>
         </div>
         <sc-if value="{{k.live}}" hint-placeholder-val="{{false}}">
@@ -202,39 +242,105 @@ button{font-family:inherit;cursor:pointer}
       </div>
     </sc-for>
   </div>
+
+  <!-- ===================== Variation chain (hidden by default) ===================== -->
+  <sc-if value="{{chainOpen}}" hint-placeholder-val="{{false}}">
+    <div style="height: 86px; flex: none; display: flex; align-items: center; gap: 16px; background: #2D1621; border: 1px solid {{chainPanelBorder}}; border-radius: 16px; padding: 0 14px; box-sizing: border-box">
+      <div style="display: flex; flex-direction: column; gap: 6px; width: 150px; flex: none">
+        <span style="font-size: 10px; font-weight: 800; letter-spacing: 0.14em; color: #A9C3D6">VARIATION CHAIN</span>
+        <button onClick="{{toggleChainOn}}" role="switch" aria-checked="{{chainOn}}" style="width: 96px; height: 26px; border-radius: 13px; border: 1px solid {{chainSwBorder}}; background: {{chainSwBg}}; color: {{chainSwFg}}; font-size: 10px; font-weight: 800; letter-spacing: 0.12em; display: flex; align-items: center; gap: 6px; padding: 0 4px">
+          <span style="width: 18px; height: 18px; border-radius: 9px; background: {{chainKnobBg}}; margin-left: {{chainKnobPos}}px" aria-hidden="true"></span>
+          {{chainOnLabel}}
+        </button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; flex: none; opacity: {{chainOpacity}}">
+        <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.14em; color: #A9C3D6">SWITCH EVERY</span>
+        <div role="radiogroup" aria-label="Switch every" style="display: flex; gap: 2px">
+          <sc-for list="{{everyBtns}}" as="eb" hint-placeholder-count="3">
+            <button role="radio" aria-checked="{{eb.on}}" onClick="{{eb.pick}}" style="height: 26px; padding: 0 9px; border-radius: 6px; border: 1px solid #4F2D3D; background: {{eb.bg}}; color: {{eb.fg}}; font-size: 11px; font-weight: 700">{{eb.label}}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; opacity: {{chainOpacity}}">
+        <div style="display: flex; justify-content: space-between; font-size: 9px; font-weight: 700; letter-spacing: 0.14em; color: #A9C3D6">
+          <span>SEQUENCE · CLICK A CELL: A → B → C → —</span>
+          <span style="letter-spacing: 0.04em; font-weight: 500">loop of 8 · now playing {{chainNow}}</span>
+        </div>
+        <div style="display: flex; gap: 4px">
+          <sc-for list="{{chainCells}}" as="cc" hint-placeholder-count="8">
+            <button onClick="{{cc.cycle}}" aria-label="{{cc.aria}}" style="flex: 1; height: 30px; border-radius: 7px; border: 2px solid {{cc.border}}; background: {{cc.bg}}; color: {{cc.fg}}; font-size: 13px; font-weight: 800; padding: 0; display: flex; align-items: center; justify-content: center; gap: 4px">
+              <span style="font-size: 9px; font-weight: 600; color: {{cc.numColor}}">{{cc.num}}</span>{{cc.label}}
+            </button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; flex: none; opacity: {{chainOpacity}}">
+        <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.14em; color: #A9C3D6">ORDER</span>
+        <div role="radiogroup" aria-label="Order" style="display: flex; gap: 2px">
+          <sc-for list="{{orderBtns}}" as="ob" hint-placeholder-count="2">
+            <button role="radio" aria-checked="{{ob.on}}" onClick="{{ob.pick}}" style="height: 26px; padding: 0 9px; border-radius: 6px; border: 1px solid #4F2D3D; background: {{ob.bg}}; color: {{ob.fg}}; font-size: 11px; font-weight: 700">{{ob.label}}</button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#D7EFFF","options":["#D7EFFF","#E9F056","#C3D0B5"]},"hot":{"editor":"color","default":"#FF5C34","options":["#FF5C34","#E9F056","#D7EFFF"]},"mix":{"editor":"range","default":100,"min":0,"max":100,"step":1,"unit":"%"},"menuOpen":{"editor":"boolean","default":true},"$preview":{"width":1040,"height":380}}'>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#D7EFFF","options":["#D7EFFF","#E9F056","#C3D0B5"]},"hot":{"editor":"color","default":"#FF5C34","options":["#FF5C34","#E9F056","#D7EFFF"]},"mix":{"editor":"range","default":100,"min":0,"max":100,"step":1,"unit":"%"},"mode":{"editor":"enum","options":["VOL","LP","HP"],"default":"VOL"},"menuOpen":{"editor":"boolean","default":true},"chainOpen":{"editor":"boolean","default":false},"chainOn":{"editor":"boolean","default":false},"$preview":{"width":1040,"height":380}}'>
 class Component extends DCLogic {
   renderVals() {
     const accent = this.props.accent ?? '#D7EFFF';
     const hot = this.props.hot ?? '#FF5C34';
     const st = this.state || {};
-    const menuProp = this.props.menuOpen;
-    const open = st.open ?? !(menuProp === false || menuProp === 'false' || menuProp === '0');
+    const truthy = (v, d) => (v === undefined || v === null ? d : !(v === false || v === 'false' || v === '0' || v === 0));
+    const open = st.open ?? truthy(this.props.menuOpen, true);
+    const chainOpen = st.chainOpen ?? truthy(this.props.chainOpen, false);
     const sig = st.sig ?? true;
-    // A / B / C variations: each keeps its own preset + knob settings
-    const mixDefault = Number(this.props.mix ?? 100);
-    const vars = st.vars ?? {
-      A: { sel: { c: 0, i: 2 }, mix: mixDefault, depth: 100 },
-      B: { sel: { c: 0, i: 1 }, mix: mixDefault, depth: 100 },
-      C: { sel: { c: 0, i: 5 }, mix: mixDefault, depth: 100 }
-    };
-    const vk = st.vk ?? 'A';
-    const V = vars[vk];
-    const setVar = (patch, extra) => this.setState(Object.assign({ vars: Object.assign({}, vars, { [vk]: Object.assign({}, V, patch) }) }, extra || {}));
-    const sel = V.sel;
-    const view = st.view ?? sel.c;
     const play = 6;
-    const mixPct = V.mix;
-    const depthPct = V.depth;
-    const mix = mixPct / 100;
-    const depth = depthPct / 100;
 
-    // [category, [[name, pattern, grid], ...]] — the plugin's real library, "Standard" = the original slots A–H first, "Creative" (100) last
+    // ---------- library: Standard A–H first, genres, Creative last
     const LIB = [["Standard", [["Sunrise Gate", "X.XX.XX.X.XX.X.X", "1/16"], ["Rhythm Stab 3-3-2", "X..X..X.X..X..X.", "1/16"], ["Rage Chop", "X-.X-.X.X-.X2.4.", "1/16"], ["Gallop Gate", "X.XXX.XXX.XXX.XX", "1/16"], ["KBBB Roll", ".XXX.XXX.XXX.XXX", "1/16"], ["Supersaw Stutter", "4.2.X.3.4.2.X.33", "1/16"], ["3-3-2 Chords", "X--X--X-X--X--X-", "1/16"], ["Build-Up 32", "X.X.X.X.X.X.X.X.XXXXXXXX22224444", "1/16"]]], ["Trance", [["Pure Sixteenths", "XXXXXXXXXXXXXXXX", "1/16"], ["Offbeat Pulse", "..X...X...X...X.", "1/16"], ["Gallop Gate", "X.XXX.XXX.XXX.XX", "1/16"], ["Reverse Gallop", "XX.XXX.XXX.XXX.X", "1/16"], ["Sunrise Gate", "X.XX.XX.X.XX.X.X", "1/16"], ["Euphoria 32", "XX.XX.XX.XX.XX.XXX.XX.XX.X.XXXXX", "1/16"], ["Pumping Pad", ".xXX.xXX.xXX.xXX", "1/16"], ["Chord Bounce", "X.X..X.XX.X..XX.", "1/16"], ["Anthem Legato", "X-.X-.X.X-.X-.X.", "1/16"], ["Tech Trance Chop", "X.X.XX.X.X.XX.XX", "1/16"], ["Vocal Trance Gate", "X-X.X-X.X.X-X.X.", "1/16"], ["Breakdown Swell", "X---X---X---X.X.", "1/8"], ["Build-Up 32", "X.X.X.X.X.X.X.X.XXXXXXXX22224444", "1/16"], ["Peak Time 32", "X.XX.XX.X.XX.X.XX.XX.XX.XX.X2.3.", "1/16"]]], ["Psytrance / Goa", [["KBBB Roll", ".XXX.XXX.XXX.XXX", "1/16"], ["KBB Skip", ".XX..XX..XX..XX.", "1/16"], ["Off-Bass", "..X...X...X...XX", "1/16"], ["Full-On Accents", ".Xxo.Xxo.Xxo.XxX", "1/16"], ["Prog Psy Pulse", ".X.X.X.X.X.X.X.X", "1/16"], ["Goa Triplet Roll", ".XX.XX.XX.XX.XX.XX.XX.XX", "1/16T"], ["Night Psy 32nds", "..XXXXXX..XXXXXX..XXXXXX..XXXXXX", "1/32"], ["Twilight Shuffle", "..XX.X.X..XX.XXX", "1/16"], ["Acid Line Gate", "X.XXX..X.XX.X.X.", "1/16"], ["Forest Glitch", ".X2X.X.3.XX2.4.X", "1/16"]]], ["Eurodance", [["90s Offbeat Stab", "..X...X...X...XX", "1/16"], ["Rhythm Stab 3-3-2", "X..X..X.X..X..X.", "1/16"], ["Dancer Stab", "X..X..X...X.X.X.", "1/16"], ["Piano Shuffle", "X..X.X..X..X.X.X", "1/16"], ["Organ Bass Bounce", ".X.X.X.X.XX..X.X", "1/16"], ["Pizzicato Pulse", "XxXxXxXxXxXxXxXX", "1/16"], ["Dancefloor Eighths", "X.x.X.x.X.x.X.XX", "1/16"], ["Synth Strings Chop", "X-.X-.X-.X-.X-.X", "1/16"], ["Rap Verse Stab", "X.....X...X.....", "1/16"], ["Rave Stab", "X.X.X.XX.X.XX.X.", "1/16"], ["Euro Lead Hook", "X.XX.X.XX.X.XX.X", "1/16"], ["Chorus Lift 32", "X..X..X.X..X..X.X..X..X.X.X.XXXX", "1/16"], ["Key Change Fill 32", "X..X..X.X..X..X.X.X.X.X.22223344", "1/16"]]], ["Hands Up / Dance 2000s", [["Hands Up Lead", "X.XXX.X.XX.XX.X.", "1/16"], ["Supersaw Drive", "XxXXXxXXXxXXXXXX", "1/16"], ["Waterfall Gate", "XX.XX.XX.X.XXX.X", "1/16"], ["Sidechain Bass", ".xX..xX..xX..xXX", "1/16"], ["Jumpstyle Bounce", ".X.X.X.X.X.X.XXX", "1/16"], ["Clubland Stab", "X..XX..XX.X.X.X.", "1/16"], ["Nightcore Rush", "X.XXX.XXX.XX2222", "1/16"], ["Hands In The Air 32", "X.XXX.X.XX.XX.X.X.XXX.X.2.2.4444", "1/16"]]], ["EDM / Big Room", [["Bounce Offbeat", ".X.X.X.X", "1/8"], ["Big Room Drop", "X...X.X...X.X...", "1/16"], ["Festival Stab", "X.X...X.X.X...XX", "1/16"], ["Melbourne Horn", "X..X..X.X..X.XX.", "1/16"], ["Electro Pump", ",oxX,oxX,oxX,oxX", "1/16"], ["Future House Bass", "X..X.X..X..X.X.X", "1/16"], ["Prog House Chop", ".XXXX.XX.XXXX.X.", "1/16"], ["Tropical Pluck", "X..X..X...X.X...", "1/16"], ["Drop Roll 32", "X...X...X...X...XXXXXXXX22223344", "1/16"], ["Snare Roll Riser 32", "X...X...X.X.X.X.XXXXXXXX22224444", "1/16"]]], ["Future Bass", [["3-3-2 Chords", "X--X--X-X--X--X-", "1/16"], ["Supersaw Chop", "X-.X-.X-X-.X-.X.", "1/16"], ["Stutter Chords", "X.X.X.X.3.3.4444", "1/16"], ["Swell Gate", ",oxX,oxX,oxXXXXX", "1/16"], ["Ducked Chords", ".oX-.oX-.oX-.oX-", "1/16"], ["Half-Time Triplets", "X--X--X--X--XX.XX.XXXXXX", "1/16T"], ["Chord Roll Fill", "X---X---X.X.2344", "1/16"], ["Wobble Triplets", "X.XX.XX.XX.4", "1/8T"]]], ["Hardstyle", [["Reverse Bass Swell", ".oxX.oxX.oxX.oxX", "1/16"], ["Euphoric Lead", "X.XXX.XXX-XXX.X.", "1/16"], ["Offbeat Stabs", "..X...XX..X...XX", "1/16"], ["Rawstyle Screech", "X.X2.X.XX.X2.4X.", "1/16"], ["Anti-Climax", "X..X.X..X.X..XX.", "1/16"], ["Kick Roll Fill 32", "X...X...X...X...X.X.X.X.XXXX4444", "1/16"]]], ["Rage", [["Rage Chop", "X-.X-.X.X-.X2.4.", "1/16"], ["Supersaw Stutter", "4.2.X.3.4.2.X.33", "1/16"], ["Alien Lead", "X-X-X.X-X-X.X2X.", "1/16"], ["Rage Bounce", "X..X..X.2..X..X.", "1/16"], ["Glitch Ratchet", "2.3X.4..2X.3.4.X", "1/16"], ["Moshpit Rolls", "X.X.X.X.3.X.4.X.", "1/16"], ["Half-Time Stab", "X.......X..X....", "1/16"], ["Synth Tresillo", "X-.X-.X.X-.X-.X-", "1/16"], ["Dark Pulse", "X.xX.xX.X.xX.2X.", "1/16"], ["Rage Triplets", "XX.XX.X.XX.4", "1/8T"], ["Vamp Lead 32", "X..X..X.X..X.X..X..X..X.2.2.3344", "1/16"]]], ["Trap / Drill / Plugg", [["Plugg Bounce", "X..X..X...X..X..", "1/16"], ["Drill Slide", "X-..X-.X..X-.X..", "1/16"], ["808 Glide", "X---..X--.X.X---", "1/16"], ["Hat Roll Gate", "X.X.X.X.X.X.2344", "1/16"], ["Triplet Flow", "X.XX.XX.X.XXX.XX.XX.X.XX", "1/16T"], ["Hyperpop Glitch 32", "X.X.2..XXX.3.X..X.2.X.4.XX..3.X.", "1/32"]]], ["House / Garage", [["House Offbeat Chords", "..X...X...X..XX.", "1/16"], ["Piano House", "X..X..X..X..X.X.", "1/16"], ["Disco Chop", "X.X.XX.XX.X.XX.X", "1/16"], ["Speed Garage Bass", ".X.X..X..X.XX.X.", "1/16"], ["2-Step Stabs", "...X.X...X....XX.....X..", "1/16T"], ["Garage Shuffle", "...X.X...X.X...X.X..XX.X", "1/16T"], ["Swung Organ", "X.X..X..X.X.X.X..X..XX.X", "1/16T"]]], ["Jersey Club", [["Jersey Kick", "X...X...X..X..X.", "1/16"], ["Jersey Bounce", "X...X...X..X..2.", "1/16"], ["Jersey Chop", "XX..XX..XX.XX.XX", "1/16"], ["Triplet Squeaks", "XXX...XXX...XXX...XXXXXX", "1/16T"], ["Baltimore Break", "X...X..XX.X...X.", "1/16"], ["Jersey Fill 32", "X...X...X..X..X.X...X...2..2..4.", "1/16"]]], ["Techno", [["Off-Chord", ".X...X...X...X..", "1/16"], ["Rumble", ".xXx.xXx.xXx.xXx", "1/16"], ["Acid Accents", "XXxXxXXxXxXXxXxX", "1/16"], ["Industrial Chop", "X.X2X.X.X.X2X.4.", "1/16"], ["Minimal Stab", "..X.....X....X..", "1/16"], ["Hard Techno Drive", ".XXX.XX2.XXX.X4X", "1/16"]]], ["Breaks / DnB", [["Amen Gate", "X.X...X.X.XX..X.", "1/16"], ["Two-Step DnB", "X...X.....X.X...", "1/16"], ["Breakbeat", "X..X..X...XX.X..", "1/16"], ["Neuro Stutter", "X.3...X2X..4.X2.", "1/16"], ["Jungle Chop 32", "X.X.XX.X..X.X.XXX.X.X..X.XX.2.4.", "1/16"]]], ["Euclidean / Poly", [["Euclid 13/32", "X..X.X..X.X..X.X..X.X..X.X..X.X.", "1/16"], ["Euclid 11/16", "X.XX.XX.XX.XX.XX", "1/16"], ["Euclid 9/16", "X.X.X.X.XX.X.X.X", "1/16"], ["Euclid 7/16 Samba", "X..X.X.X..X.X.X.", "1/16"], ["Euclid 5/16 Bossa", "X...X..X..X..X..", "1/16"], ["Euclid 7/12 Bell", "X.X.X.XX.X.X", "1/16"], ["Euclid 5/12", "X..X.X..X.X.", "1/16"], ["Euclid 4/9 Aksak", "X..X.X.X.", "1/16"], ["Euclid 5/8 Cinquillo", "X.X.XX.X", "1/16"], ["Euclid 3/8 Tresillo", "X..X..X.", "1/16"], ["Poly 3", "X..", "1/16"], ["Poly 5", "X.X..", "1/16"], ["Poly 7", "X.XX.X.", "1/16"], ["Dotted Eighths", "XXXX", "1/8D"], ["Triplet Eighths", "XXXXXXXXXXXX", "1/8T"]]], ["Stutter / FX", [["Stutter 32nds", "XXXXXXXXXXXXXXXX", "1/32"], ["Buzz 64ths", "X.X.X.X.X.X.X.X.", "1/64"], ["Machine Gun", "4444444444444444", "1/16"], ["Ratchet Ladder", "X.2.3.4.X.2.3.4.", "1/16"], ["Tape Stop", "4433332222XXX-X-", "1/16"], ["Morse", "X.X.X--.X-.XX.X-", "1/16"], ["Bar End Fill", "X...X...X...4444", "1/16"]]], ["Creative", [["Seven Up", "X.X.XX.", "1/16"], ["Five Alive", "X.Xx.", "1/16"], ["Nine Lives", "X.X..XX.x", "1/16"], ["Eleven Steps", "X.X.X..X.X.", "1/16"], ["Thirteen Ghosts", "X..x.X.,.X.x.", "1/16"], ["Prime Time", ".XX.X.X...X.X...", "1/16"], ["Fibonacci", "XXX.X..X....X...", "1/16"], ["Dotted Drift", "X.x.X", "1/16D"], ["Fifteen Fold", "X.XX.X..X.XX.X.", "1/16"], ["Odd Couple", "X.X.XX.X.X", "1/16"], ["Breathing Pad", ",oxXXxo,,oxXXxo,", "1/16"], ["Tidal", ",,ooxxXXXXxxoo,,", "1/16"], ["Heartbeat", "Xo......Xo......", "1/16"], ["Echo Fade", "X.x.o.,.X.x.o.,.", "1/16"], ["Crescendo Roll", ",.o.x.X.2.3.4444", "1/16"], ["Ghost Notes", "X,,x,,X,,x,,X,x,", "1/16"], ["Accent Wave", "XoxoxXoxoxXoxoxX", "1/16"], ["Rain Drops", "x.,o..X.,..o.x,.", "1/16"], ["Tremolo Bloom", ",,,,ooooxxxxXXXX", "1/32"], ["Pyramid", ",oxXXxo,,oxXXxo.", "1/8"], ["Fade Out Line", "XXXXxxxxoooo,,,,", "1/16"], ["Fade In Line", ",,,,ooooxxxxXXXX", "1/16"], ["Wave Train", ",oxXxo,.,oxXxo,.", "1/16"], ["Pendulum", "Xx.o.,.o.x.X", "1/16"], ["Bouncing Ball", "X.......X.....X..X.X.2.3.4.44444", "1/16"], ["Glitch Cascade", "4.3.2.X.4.3.2.X.", "1/16"], ["Ratchet Rain", "2.3..4.2..3.4..2", "1/16"], ["Digital Hiccup", "X.X.X2..X.X.X4..", "1/16"], ["Bit Crush Stutter", "XXXX....4444....", "1/32"], ["Machine Talk", "X.2.X4.3X.2.X.43", "1/16"], ["Rise And Fall", "4.3.2.X.X.2.3.4.", "1/16"], ["Hyperdrive", "2222333344444444", "1/16"], ["Skipping CD", "XX.XX.XX.4..XX.X", "1/16"], ["Laser Burst", "4...4...4..44.44", "1/16"], ["Data Corruption", "X.4..2X.3..X.4.2", "1/16"], ["Buffer Underrun", "XXXXXX..X...4...", "1/16"], ["Pixel Rain", "2.,2.o2.2,.2.x2.", "1/32"], ["Modem Handshake", "X2X3X4X2X3X42343", "1/32"], ["Arcade Coin", "X.X.4...........", "1/16"], ["Long Exposure", "X-------........", "1/16"], ["Slow Motion", "X---.X---.X-.X-.", "1/16"], ["Sustain Pedal", "X-----.X-----.X.", "1/16"], ["Tape Warble", "X-.X--.X-.X--.X-", "1/16"], ["Drone Cuts", "X-------X------.", "1/16"], ["Choir Breath", "X---X---X--.X-..", "1/16"], ["Legato Morse", "X--.X.X--.X..X-.", "1/16"], ["Glide Pairs", "X-.X-.X-.X-.X-..", "1/16"], ["Staircase Hold", "X.X-.X--.X---...", "1/16"], ["Velvet Rope", "x-X-x-X-x-X-x-X-", "1/16"], ["Swell And Cut", ",-o-x-X-----X...", "1/16"], ["Off Kilter", ".X..X.X..X..X.X.", "1/16"], ["Clave Inside Out", "..X.X...X..X..X.", "1/16"], ["Backwards Bounce", ".X..X..X..X.X..X", "1/16"], ["Lopsided", "X..X.X..X..X.X..", "1/16"], ["Stumble", "X.X..XX..X.X..XX", "1/16"], ["Polka Dot", "X.X.X..X.X.X..X.", "1/16"], ["Tumbling", "XXX.XX.X.X..X...", "1/16"], ["Push Pull", "X..XX..XX..XX..X", "1/16"], ["Hiccup Groove", "X.XX..X.X.XX.X..", "1/16"], ["Upside Down", "..XX.X....XX.XX.", "1/16"], ["Triplet Rain", "X.XXX.X.XX.XX.XXXX.X.XXX", "1/16T"], ["Six Eight", "X.xx.xX.xx.x", "1/8T"], ["Afro Bell 12", "X.X.XX.X.X.X", "1/8T"], ["Triplet Ratchets", "X..2..X..3..X..4..X.X.X.", "1/16T"], ["Lazy Triplets", "X--X--X--X--X--X.X.X.X..", "1/16T"], ["Swung Eighths", "X..X.XX..X.XX..X.XX..XXX", "1/16T"], ["Triplet Sparkle", "X.X.XX.X.X.XX.X.XX.X.XXX", "1/32T"], ["Ternary Pulse", "XxoXxoXxoXxoXxoXxoXxoXxo", "1/16T"], ["Shuffle Ghosts", "X.,X.,X.,X.,X.xX.,X.xXxX", "1/16T"], ["Waltz Gate", "X.xX.xX.xX.x", "1/8"], ["Dotted Cascade", "X.XX", "1/16D"], ["Dotted Pulse", "XXXXXXXXXXXXXXXX", "1/8D"], ["Dotted Tresillo", "X.X.X.XX", "1/8D"], ["Quarter Thump", "X.XX", "1/4"], ["Half Bar Chop", "X--.X-.XX--.X...", "1/8"], ["Wide Stabs", "X..X..X.X..X..X.", "1/8"], ["Slow Euro", "X.XX.X.XX.XX.X.X", "1/8"], ["Sixty-Four Spray", "X.X.XX.XX.X.XXXXX.X.XX.XX.X.XXXX", "1/64"], ["Thirty-Two Twitch", "X.X.X.XX..X.X.XXX.X.X.XX..XXXX..", "1/32"], ["Granular Dust", "x.,.o,.x,.o.,x.,,x.o.,x.,o.x,.,", "1/64"], ["Palindrome", "X.X..XX..XX..X.X", "1/16"], ["Mirror Mirror", "XX.X.X....X.X.XX", "1/16"], ["Morse SOS", "X.X.X..X-.X-.X-..X.X.X.........", "1/32"], ["Heart Monitor", "X.......Xx......", "1/16"], ["Clock Tick", "x...X...x...X...", "1/16"], ["Typewriter", "XXxX.XxX.XX.xXX4", "1/16"], ["Comet Tail", "4.3.2.X-----....", "1/16"], ["Spiral", "X...X..X.X.XXXXX", "1/16"], ["Step Ladder", "X.X..X...X....X.", "1/16"], ["Countdown", "X...X..X.X.XXX44", "1/16"], ["Trance Morse", "X.XX-.X-.XX.X-..", "1/16"], ["Euro Ghost Stabs", "X,,X,,X,X,,X,,X,", "1/16"], ["Rage Waterfall", "4.4.3.3.2.2.X.X.", "1/16"], ["Hardstyle Hiccup", ".oxX.ox2.oxX.o4X", "1/16"], ["Psy Glitch Roll", ".XX2.XXX.X2X.XX4", "1/16"], ["Jersey Chopper", "X...X...X..2..4.", "1/16"], ["Garage Skip", "X..X.X...X.....XX.X.X...", "1/16T"], ["Future Wobble", "X-X-X-X.X.X4", "1/8T"], ["Big Room Tease", "X.......X.......X...X...X.X.XXXX", "1/16"], ["Dub Echo", "X.....x.....o...", "1/16"]]]];
     const NOTES = ['C1', 'C#1', 'D1', 'D#1', 'E1', 'F1', 'F#1', 'G1'];
     const LV = { X: 1, x: 0.7, o: 0.4, ',': 0.2 };
+    const FAV = -1;
+
+    // ---------- A / B / C variations (each: preset + knobs + mode) with undo / redo history
+    const mixDefault = Number(this.props.mix ?? 100);
+    const modeDefault = this.props.mode ?? 'VOL';
+    const base = (c, i) => ({ sel: { c, i }, mix: mixDefault, depth: 100, freq: 70, res: 30, mode: modeDefault });
+    const vars = st.vars ?? { A: base(0, 2), B: base(0, 1), C: base(0, 5) };
+    const vk = st.vk ?? 'A';
+    const V = vars[vk];
+    const past = st.past ?? [];
+    const future = st.future ?? [];
+    const commit = (nextVars, extra) => this.setState(Object.assign({
+      vars: nextVars, vk: extra && extra.vk ? extra.vk : vk,
+      past: past.concat([{ vars, vk }]).slice(-50), future: []
+    }, extra || {}));
+    const setVar = (patch, extra) => commit(Object.assign({}, vars, { [vk]: Object.assign({}, V, patch) }), extra);
+    const undo = () => {
+      if (!past.length) return;
+      const prev = past[past.length - 1];
+      this.setState({ vars: prev.vars, vk: prev.vk, past: past.slice(0, -1), future: [{ vars, vk }].concat(future) });
+    };
+    const redo = () => {
+      if (!future.length) return;
+      const nxt = future[0];
+      this.setState({ vars: nxt.vars, vk: nxt.vk, past: past.concat([{ vars, vk }]), future: future.slice(1) });
+    };
+
+    const sel = V.sel;
+    const mix = V.mix / 100, depth = V.depth / 100, mode = V.mode;
+
+    // ---------- favorites + search
+    const favs = st.favs ?? ['0:2', '8:0', '3:1', '16:24'];
+    const isFav = (c, i) => favs.indexOf(c + ':' + i) >= 0;
+    const toggleFav = (c, i) => {
+      const key = c + ':' + i;
+      this.setState({ favs: isFav(c, i) ? favs.filter((f) => f !== key) : favs.concat([key]) });
+    };
+    const q = (st.q ?? '').trim();
+    const view = st.view ?? sel.c;
 
     const parse = (str) => {
       const out = [];
@@ -248,7 +354,7 @@ class Component extends DCLogic {
       });
       return out;
     };
-    const miniOf = (S, onSel) => {
+    const miniOf = (S) => {
       const w = S.length <= 16 ? 5 : (S.length <= 24 ? 3 : 2);
       return S.map((s) => ({
         w,
@@ -258,6 +364,7 @@ class Component extends DCLogic {
     };
     const gridLabel = (p) => p[1].length + ' × ' + p[2];
 
+    // ---------- current pattern
     const curP = LIB[sel.c][1][sel.i];
     const S = parse(curP[1]);
     const n = S.length;
@@ -281,6 +388,7 @@ class Component extends DCLogic {
       };
     });
 
+    // ---------- gate shape (0..1 per position)
     const top = (l) => (100 - l * 90 - 6).toFixed(1);
     const pts = ['0,98'];
     S.forEach((s, i) => {
@@ -295,95 +403,197 @@ class Component extends DCLogic {
       }
     });
     pts.push((n * 100) + ',98');
-
-    // --- audio through the plugin: synthetic sustained chord in, gated by the envelope above
     const PX = pts.map((p) => p.split(',').map(Number));
-    const gainAt = (x) => {
+    const gateAt = (x) => {
       let j = 1;
       while (j < PX.length - 1 && PX[j][0] < x) j++;
       const [x0, y0] = PX[j - 1], [x1, y1] = PX[j];
       const y = x1 === x0 ? y1 : y0 + (y1 - y0) * (x - x0) / (x1 - x0);
       return Math.max(0, Math.min(1, (98 - y) / 92));
     };
+    const amount = (g) => (1 - mix) + mix * ((1 - depth) + depth * g);
+
+    // ---------- audio through the plugin
+    // VOL: output = input x amount.  LP: closed gate = dark & smooth (loses highs + some level).  HP: closed = thin (loses body).
     const W = n * 100, N = n * 22;
-    const up = [], dnIn = [], upOut = [], dnOut = [];
-    for (let q = 0; q <= N; q++) {
-      const x = W * q / N;
+    const up = [], dn = [], upO = [], dnO = [];
+    for (let qx = 0; qx <= N; qx++) {
+      const x = W * qx / N;
       const a = 0.8 + 0.08 * Math.sin(x * 0.011) + 0.04 * Math.sin(x * 0.047);
-      const pk = a * (0.72 + 0.28 * Math.abs(Math.sin(x * 0.9) * Math.sin(x * 0.31 + 1.3)));
-      // the gate only changes the volume of the input over time:
-      // output = input x gain, gain = (1 - mix) + mix * ((1 - depth) + depth * gate)
-      const gain = (1 - mix) + mix * ((1 - depth) + depth * gainAt(x));
-      const out = pk * gain;
+      const det = Math.abs(Math.sin(x * 0.9) * Math.sin(x * 0.31 + 1.3));
+      const pk = a * (0.72 + 0.28 * det);
+      const op = amount(gateAt(x));
+      let out;
+      if (mode === 'LP') out = a * (0.5 + 0.22 * op + 0.28 * det * op);
+      else if (mode === 'HP') out = a * (0.25 + 0.47 * op + 0.28 * det);
+      else out = pk * op;
       const X = x.toFixed(1);
       up.push(X + ',' + (50 - pk * 46).toFixed(1));
-      dnIn.push(X + ',' + (50 + pk * 46).toFixed(1));
-      upOut.push(X + ',' + (50 - out * 46).toFixed(1));
-      dnOut.push(X + ',' + (50 + out * 46).toFixed(1));
+      dn.push(X + ',' + (50 + pk * 46).toFixed(1));
+      upO.push(X + ',' + (50 - out * 46).toFixed(1));
+      dnO.push(X + ',' + (50 + out * 46).toFixed(1));
     }
-    const band = (top, bot) => 'M' + top.join(' L') + ' L' + bot.slice().reverse().join(' L') + ' Z';
-    // ghost (behind) = the incoming signal; what is visible of it above the output is what the gate removed.
-    // output (on top) = exactly what leaves the plugin.
-    const inPath = band(up, dnIn);
-    const outPath = band(upOut, dnOut);
-    // gain curve drawn as the line: same formula, so the line sits exactly on the output's edge shape
-    const envShown = PX.map(([px, py]) => {
-      const gt = Math.max(0, Math.min(1, (98 - py) / 92));
-      const gn = (1 - mix) + mix * ((1 - depth) + depth * gt);
-      return px + ',' + (98 - gn * 92).toFixed(1);
-    }).join(' ');
+    const band = (t, b) => 'M' + t.join(' L') + ' L' + b.slice().reverse().join(' L') + ' Z';
+    const envShown = PX.map(([px, py]) => px + ',' + (98 - amount(Math.max(0, Math.min(1, (98 - py) / 92))) * 92).toFixed(1)).join(' ');
 
-    const cats = LIB.map((g, c) => ({
-      name: g[0],
-      count: String(g[1].length),
-      selected: c === view,
-      bg: c === view ? '#4D2A3A' : 'transparent',
-      fg: c === view ? '#EAF6FF' : (c === sel.c ? hot : '#C4DDEE'),
-      weight: c === view ? '700' : '500',
-      pick: () => this.setState({ view: c, open: true })
-    }));
+    // ---------- menu: categories (Favorites pinned), items, search
+    const cats = [{ name: '★ Favorites', count: String(favs.length), c: FAV }]
+      .concat(LIB.map((g, c) => ({ name: g[0], count: String(g[1].length), c })))
+      .map((x) => ({
+        name: x.name,
+        count: x.count,
+        selected: !q && x.c === view,
+        bg: !q && x.c === view ? '#4D2A3A' : 'transparent',
+        fg: !q && x.c === view ? '#EAF6FF' : (x.c === sel.c ? hot : (x.c === FAV ? '#FF8A6A' : '#C4DDEE')),
+        weight: !q && x.c === view ? '800' : '500',
+        pick: () => this.setState({ view: x.c, q: '', open: true })
+      }));
 
-    const items = LIB[view][1].map((p, i) => {
-      const isSel = view === sel.c && i === sel.i;
+    let list;
+    if (q) {
+      const ql = q.toLowerCase();
+      list = [];
+      LIB.forEach((g, c) => g[1].forEach((p, i) => {
+        if ((p[0] + ' ' + g[0]).toLowerCase().indexOf(ql) >= 0) list.push({ c, i, p, meta: g[0] });
+      }));
+    } else if (view === FAV) {
+      list = favs.map((f) => { const [c, i] = f.split(':').map(Number); return { c, i, p: LIB[c][1][i], meta: LIB[c][0] }; });
+    } else {
+      list = LIB[view][1].map((p, i) => ({ c: view, i, p, meta: view === 0 ? NOTES[i] : gridLabel(p) }));
+    }
+    const items = list.slice(0, 80).map((e) => {
+      const isSel = e.c === sel.c && e.i === sel.i;
+      const fav = isFav(e.c, e.i);
       return {
-        name: p[0],
-        grid: view === 0 ? NOTES[i] : gridLabel(p),
-        hasBadge: view === 0,
-        badge: 'ABCDEFGH'[i] || '',
+        name: e.p[0],
+        meta: e.meta,
+        hasBadge: e.c === 0,
+        badge: e.c === 0 ? 'ABCDEFGH'[e.i] : '',
         badgeBg: isSel ? hot : '#3A1F2B',
         badgeFg: isSel ? '#22101A' : '#EAF6FF',
         selected: isSel,
         bg: isSel ? '#4D2A3A' : 'transparent',
-        mini: miniOf(parse(p[1])),
-        pick: () => setVar({ sel: { c: view, i } }, { view, open: false })
+        mini: miniOf(parse(e.p[1])),
+        fav,
+        starFill: fav ? '#FF5C34' : 'none',
+        starStroke: fav ? '#FF5C34' : '#8FA7BA',
+        starLabel: fav ? 'Remove from favorites' : 'Add to favorites',
+        star: () => toggleFav(e.c, e.i),
+        pick: () => setVar({ sel: { c: e.c, i: e.i } }, { view: q ? e.c : view, open: false })
       };
     });
 
     const move = (d) => {
-      const list = LIB[sel.c][1];
-      const i = (sel.i + d + list.length) % list.length;
-      setVar({ sel: { c: sel.c, i } }, { view: sel.c });
+      const lst = LIB[sel.c][1];
+      setVar({ sel: { c: sel.c, i: (sel.i + d + lst.length) % lst.length } }, { view: sel.c });
     };
 
-    const knob = (label, f, value, color, first, key) => {
-      const a = (135 + f * 270) * Math.PI / 180;
+    // ---------- knobs
+    const knob = (label, f, value, color, first, key, dim) => {
+      const ang = (135 + f * 270) * Math.PI / 180;
       return {
+        label, value, color,
+        labelColor: dim ? '#FF8A6A' : '#A9C3D6',
         live: !!key,
         v100: String(Math.round(f * 100)),
         set: key ? (e) => setVar({ [key]: Number(e.target.value) }) : null,
-        label, value, color,
         aria: label + ' ' + value,
         dash: (f * 122.5).toFixed(1) + ' 200',
-        px: (32 + 12 * Math.cos(a)).toFixed(1),
-        py: (32 + 12 * Math.sin(a)).toFixed(1),
+        px: (32 + 12 * Math.cos(ang)).toFixed(1),
+        py: (32 + 12 * Math.sin(ang)).toFixed(1),
         divider: first ? '1px solid #4F2D3D' : 'none',
-        pad: first ? '12px' : '0'
+        pad: first ? '10px' : '0'
       };
     };
+    const hz = Math.round(200 * Math.pow(60, V.freq / 100));
+    const hzLabel = hz >= 1000 ? (hz / 1000).toFixed(1) + ' kHz' : hz + ' Hz';
+    const knobs = [
+      knob('ATTACK', 0.12, '1.0 ms', accent),
+      knob('DECAY', 0.45, '150 ms', accent),
+      knob('SUSTAIN', 1, '100 %', accent),
+      knob('RELEASE', 0.3, '25 ms', accent),
+      knob('GATE', 0.74, '75 %', accent),
+      knob('SWING', 0, '0 %', accent, true),
+      knob('DEPTH', depth, V.depth + ' %', accent, false, 'depth'),
+      knob('STEREO', 0.25, '2 st', accent),
+      knob('MIX', mix, V.mix + ' %', accent, false, 'mix')
+    ];
+    if (mode !== 'VOL') {
+      knobs.push(knob('CUTOFF', V.freq / 100, hzLabel, hot, true, 'freq', true));
+      knobs.push(knob('RESO', V.res / 100, V.res + ' %', hot, false, 'res', true));
+    }
+    const modes = [
+      { id: 'VOL', label: 'VOL', title: 'Gate the volume' },
+      { id: 'LP', label: 'LPF', title: 'Gate a low-pass filter: closed steps get dark' },
+      { id: 'HP', label: 'HPF', title: 'Gate a high-pass filter: closed steps get thin' }
+    ].map((m) => ({
+      label: m.label, title: m.title, on: m.id === mode,
+      bg: m.id === mode ? hot : '#3A1F2B',
+      fg: m.id === mode ? '#22101A' : '#C4DDEE',
+      pick: () => setVar({ mode: m.id })
+    }));
+
+    // ---------- variation chain (panel hidden by default, chain OFF by default)
+    const chainOn = st.chainOn ?? truthy(this.props.chainOn, false);
+    const seq = st.seq ?? ['A', 'A', 'B', 'A', 'A', 'A', 'C', 'B'];
+    const every = st.every ?? 1;
+    const order = st.order ?? 'SEQ';
+    const nowBar = 2;
+    const cycleNext = { A: 'B', B: 'C', C: '—', '—': 'A' };
+    const chainCells = seq.map((v, i) => ({
+      num: String(i + 1),
+      label: v,
+      aria: 'Bar ' + (i + 1) + ': ' + (v === '—' ? 'off' : 'variation ' + v),
+      border: chainOn && i === nowBar ? hot : '#4F2D3D',
+      bg: v === '—' ? 'transparent' : (v === vk ? '#4D2A3A' : '#3A1F2B'),
+      fg: v === '—' ? '#8FA7BA' : '#EAF6FF',
+      numColor: '#A9C3D6',
+      cycle: () => { const s2 = seq.slice(); s2[i] = cycleNext[v]; this.setState({ seq: s2 }); }
+    }));
+    const seg = (opts, cur, key) => opts.map((o) => ({
+      label: o[1], on: o[0] === cur,
+      bg: o[0] === cur ? '#D7EFFF' : 'transparent',
+      fg: o[0] === cur ? '#22101A' : '#C4DDEE',
+      pick: () => this.setState({ [key]: o[0] })
+    }));
+
     return {
-      accent, hot, open, steps, cats, items, sig, inPath, outPath,
+      accent, hot, open, steps, cats, items, sig, knobs, modes,
+      rootH: chainOpen ? '476' : '380',
+      inPath: band(up, dn),
+      outPath: band(upO, dnO),
+      outLabel: mode === 'VOL' ? 'OUTPUT' : 'OUTPUT · ' + (mode === 'LP' ? 'LPF' : 'HPF'),
+      env: envShown,
+      envW: String(n * 100),
       barBg: sig ? 'rgba(215,239,255,0.30)' : '#D7EFFF',
+      cur: {
+        name: curP[0],
+        cat: sel.c === 0 ? 'Standard' : LIB[sel.c][0],
+        hasBadge: sel.c === 0,
+        badge: 'ABCDEFGH'[sel.i] || '',
+        fav: isFav(sel.c, sel.i),
+        mini: miniOf(S),
+        len: String(n),
+        res: curP[2]
+      },
+      q: st.q ?? '',
+      setQ: (e) => this.setState({ q: e.target.value, open: true }),
+      searchBorder: q ? accent : '#4F2D3D',
+      viewName: q ? 'Search' : (view === FAV ? 'Favorites' : LIB[view][0]),
+      viewHint: q ? list.length + ' found' : (view === FAV ? 'star any preset to pin it here' : (view === 0 ? 'MIDI C1–G1 switches A–H' : LIB[view][1].length + ' presets')),
+      noItems: items.length === 0,
+      emptyText: q ? 'Nothing found for “' + q + '”' : 'No favorites yet: click the star next to any preset.',
+      chevron: open ? '180' : '0',
+      triggerBorder: open ? hot : '#4F2D3D',
+      toggle: () => this.setState({ open: !open, view: sel.c, q: '' }),
+      prevPreset: () => move(-1),
+      nextPreset: () => move(1),
+      undo, redo,
+      undoColor: past.length ? '#EAF6FF' : '#64394C',
+      redoColor: future.length ? '#EAF6FF' : '#64394C',
       toggleSig: () => this.setState({ sig: !sig }),
+      sigBorder: sig ? accent : '#64394C',
+      sigColor: sig ? accent : '#A9C3D6',
       varBtns: ['A', 'B', 'C'].map((key) => ({
         key,
         on: key === vk,
@@ -392,39 +602,26 @@ class Component extends DCLogic {
         fg: key === vk ? '#22101A' : '#C4DDEE',
         pick: () => this.setState({ vk: key, view: vars[key].sel.c })
       })),
-      sigBorder: sig ? accent : '#64394C',
-      sigColor: sig ? accent : '#A9C3D6',
-      cur: {
-        name: curP[0],
-        cat: sel.c === 0 ? 'Standard' : LIB[sel.c][0],
-        hasBadge: sel.c === 0,
-        badge: 'ABCDEFGH'[sel.i] || '',
-        mini: miniOf(S),
-        grid: gridLabel(curP),
-        len: String(n),
-        res: curP[2]
-      },
-      viewName: LIB[view][0],
-      viewHint: view === 0 ? 'MIDI C1–G1 switches A–H' : LIB[view][1].length + ' presets',
-      env: envShown,
-      envW: String(n * 100),
-      chevron: open ? '180' : '0',
-      triggerBorder: open ? hot : '#4F2D3D',
-      toggle: () => this.setState({ open: !open, view: sel.c }),
-      prevPreset: () => move(-1),
-      nextPreset: () => move(1),
       tools: ['<<', '>>', 'REV', 'INV', 'x2', '/2', 'FILL', 'CLR'],
-      knobs: [
-        knob('ATTACK', 0.12, '1.0 ms', accent),
-        knob('DECAY', 0.45, '150 ms', accent),
-        knob('SUSTAIN', 1, '100 %', accent),
-        knob('RELEASE', 0.3, '25 ms', accent),
-        knob('GATE', 0.74, '75 %', accent),
-        knob('SWING', 0, '0 %', accent, true),
-        knob('DEPTH', depth, depthPct + ' %', accent, false, 'depth'),
-        knob('STEREO', 0.25, '2 st', accent),
-        knob('MIX', mix, mixPct + ' %', accent, false, 'mix')
-      ]
+      chainOpen,
+      toggleChain: () => this.setState({ chainOpen: !chainOpen }),
+      chainChevron: chainOpen ? '180' : '0',
+      chainDot: chainOn ? hot : '#64394C',
+      chainBtnBorder: chainOpen ? hot : '#4F2D3D',
+      chainOn,
+      toggleChainOn: () => this.setState({ chainOn: !chainOn }),
+      chainOnLabel: chainOn ? 'ON' : 'OFF',
+      chainSwBg: chainOn ? hot : '#3A1F2B',
+      chainSwFg: chainOn ? '#22101A' : '#A9C3D6',
+      chainSwBorder: chainOn ? hot : '#4F2D3D',
+      chainKnobBg: chainOn ? '#22101A' : '#A9C3D6',
+      chainKnobPos: '0',
+      chainOpacity: chainOn ? '1' : '0.45',
+      chainPanelBorder: chainOn ? hot : '#4F2D3D',
+      chainNow: 'bar ' + (nowBar + 1) + ' → ' + seq[nowBar],
+      chainCells,
+      everyBtns: seg([[1, '1 bar'], [2, '2 bars'], [4, '4 bars']], every, 'every'),
+      orderBtns: seg([['SEQ', 'In order'], ['RND', 'Random']], order, 'order')
     };
   }
 }

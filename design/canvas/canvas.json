@@ -38,11 +38,19 @@
       "w": 1040,
       "h": 380,
       "title": "A · Mix 50% (same design, menu closed)"
+    },
+    "Chain.dc.html": {
+      "x": 0,
+      "y": 1000,
+      "w": 1040,
+      "h": 476,
+      "title": "A · CHAIN panel opened (ON) + LPF gate mode"
     }
   },
   "order": [
     "Main.dc.html",
     "Mix50.dc.html",
+    "Chain.dc.html",
     "Groovebox.dc.html",
     "BlackRage.dc.html"
   ],
