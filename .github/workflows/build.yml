@@ -36,10 +36,31 @@ jobs:
           cp docs/INSTALL.txt "$D/README.txt"
           cd dist && ditto -c -k --keepParent "Ultimate Trance Gate (Mac)" UltimateTranceGate-macOS.zip
 
+      - name: Installer (.pkg)
+        run: |
+          V=$(grep -Eo 'project\(UltimateTranceGate VERSION [0-9.]+' CMakeLists.txt | awk '{print $3}')
+          bash installer/mac/build_pkg.sh "dist/Ultimate Trance Gate (Mac)" "$V" "dist/UltimateTranceGate-$V-Mac-Installer.pkg"
+
+      - name: Test the installer
+        run: |
+          PKG=$(ls dist/*-Mac-Installer.pkg)
+          sudo installer -pkg "$PKG" -target /
+          test -f "/Library/Audio/Plug-Ins/VST3/Ultimate Trance Gate.vst3/Contents/MacOS/Ultimate Trance Gate"
+          test -f "/Library/Audio/Plug-Ins/Components/Ultimate Trance Gate.component/Contents/MacOS/Ultimate Trance Gate"
+          pkgutil --pkgs | grep ultimatetrancegate
+          codesign --verify --deep "/Library/Audio/Plug-Ins/VST3/Ultimate Trance Gate.vst3"
+          echo "installed OK"
+
+      - name: Validate the Audio Unit (auval)
+        continue-on-error: true
+        run: auval -v aumf UtG1 Mklr | tail -25
+
       - uses: actions/upload-artifact@v4
         with:
           name: UltimateTranceGate-macOS
-          path: dist/UltimateTranceGate-macOS.zip
+          path: |
+            dist/UltimateTranceGate-macOS.zip
+            dist/*-Mac-Installer.pkg
 
   windows:
     runs-on: windows-latest
@@ -61,10 +82,37 @@ jobs:
           Copy-Item "docs/INSTALL.txt" "$d/README.txt"
           Compress-Archive -Path $d -DestinationPath "dist/UltimateTranceGate-Windows.zip"
 
+      - name: Installer (Setup.exe)
+        shell: pwsh
+        run: |
+          choco upgrade innosetup -y --no-progress | Out-Null
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          $v = (Select-String -Path CMakeLists.txt -Pattern 'project\(UltimateTranceGate VERSION ([0-9.]+)').Matches[0].Groups[1].Value
+          $src = (Resolve-Path "build/UltimateTranceGate_artefacts/Release/VST3").Path
+          $out = (Resolve-Path "dist").Path
+          & $iscc "/DAppVersion=$v" "/DSourceDir=$src" "/DOutDir=$out" "installer\windows\UltimateTranceGate.iss"
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      - name: Test the installer
+        shell: pwsh
+        run: |
+          $setup = (Get-ChildItem dist/*-Windows-Setup.exe).FullName
+          Start-Process $setup -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -Wait
+          $dll = "$env:CommonProgramFiles\VST3\Ultimate Trance Gate.vst3\Contents\x86_64-win\Ultimate Trance Gate.vst3"
+          if (-not (Test-Path $dll)) { Write-Error "not installed: $dll"; exit 1 }
+          $un = "$env:ProgramFiles\mikita_laurenau\Ultimate Trance Gate\unins000.exe"
+          if (-not (Test-Path $un)) { Write-Error "no uninstaller"; exit 1 }
+          Start-Process $un -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -Wait
+          Start-Sleep -Seconds 3
+          if (Test-Path $dll) { Write-Error "uninstall left the plug-in behind"; exit 1 }
+          Write-Host "install + uninstall OK"
+
       - uses: actions/upload-artifact@v4
         with:
           name: UltimateTranceGate-Windows
-          path: dist/UltimateTranceGate-Windows.zip
+          path: |
+            dist/UltimateTranceGate-Windows.zip
+            dist/*-Windows-Setup.exe
 
   release:
     if: github.event_name == 'push'
@@ -97,11 +145,18 @@ jobs:
           body: |
             **Ultimate Trance Gate** — created by mikita_laurenau ([Instagram](https://www.instagram.com/mikita_laurenau/))
 
-            Download the zip for your system:
-            - **Mac** (Apple Silicon + Intel, VST3 + AU): `UltimateTranceGate-macOS.zip` → unzip → double-click `install_mac.command` (if macOS blocks it: right-click → Open).
-            - **Windows** (VST3): `UltimateTranceGate-Windows.zip` → copy `Ultimate Trance Gate.vst3` into `C:\Program Files\Common Files\VST3`.
+            ### Установщики / Installers
+            - **Mac** (Apple Silicon + Intel, VST3 + AU): `UltimateTranceGate-…-Mac-Installer.pkg` → двойной клик → Продолжить → Установить.
+              Если macOS не даёт открыть: правый клик → Открыть. На macOS 15+: Системные настройки → Конфиденциальность и безопасность → «Всё равно открыть».
+              *If macOS blocks it: right-click → Open; on macOS 15+: System Settings → Privacy & Security → Open Anyway.*
+            - **Windows** (VST3, 64-bit): `UltimateTranceGate-…-Windows-Setup.exe` → Далее → Установить. Если SmartScreen предупреждает: «Подробнее» → «Выполнить в любом случае».
+              *If SmartScreen warns: More info → Run anyway.*
 
-            Then rescan plug-ins in your DAW. Full guide: README.txt inside the zip.
+            После установки пересканируй плагины в DAW / rescan plug-ins in your DAW.
+
+            Zip-архивы — то же самое для ручной установки / the zips are the same plug-in for manual install.
           files: |
+            dist/*-Mac-Installer.pkg
+            dist/*-Windows-Setup.exe
             dist/UltimateTranceGate-macOS.zip
             dist/UltimateTranceGate-Windows.zip
