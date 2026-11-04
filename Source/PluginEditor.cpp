@@ -303,6 +303,7 @@ TranceGateEditor::TranceGateEditor (TranceGateProcessor& p)
     browser.onClose = [this] { showPresetBrowser (false); };
     addChildComponent (browser);
 
+    setWantsKeyboardFocus (true); // Cmd/Ctrl+Z reach keyPressed after any click in the window
     setSize (kW, kH);
     syncControls();
     startTimerHz (30);

@@ -22,8 +22,9 @@ inline juce::String search()       { return ru ("Поиск по всем пре
 inline juce::String star()         { return ru ("Добавить в избранное / убрать. Избранное — первая категория в списке, общая для всех проектов."); }
 
 // ---- pattern row ---------------------------------------------------------------
-inline juce::String undo()   { return ru ("Отменить последнее действие (Cmd+Z): правку шагов, пресет, ручку, режим, вариацию."); }
-inline juce::String redo()   { return ru ("Вернуть отменённое действие (Cmd+Shift+Z)."); }
+inline juce::String undo()   { return ru ("Отменить последнее действие: правку шагов, пресет, ручку, режим, вариацию.\n"
+                                          "Горячая клавиша Cmd+Z (на Windows Ctrl+Z), когда окно плагина активно."); }
+inline juce::String redo()   { return ru ("Вернуть отменённое действие. Cmd+Shift+Z (на Windows Ctrl+Shift+Z)."); }
 inline juce::String steps()  { return ru ("STEPS — длина паттерна, от 1 до 32 шагов. 16 шагов по 1/16 = один такт.\n"
                                           "Нечётная длина (5, 7) даёт полиметрию: ритм сдвигается каждый такт."); }
 inline juce::String rate()   { return ru ("RATE — длина одного шага. T — триоль, D — с точкой.\n"

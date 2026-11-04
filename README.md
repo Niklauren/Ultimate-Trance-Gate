@@ -13,7 +13,7 @@ VST3 + AU для macOS (Apple Silicon и Intel), VST3 для Windows.
 - `UltimateTranceGate-macOS.zip` — распакуй и дважды кликни `install_mac.command` (если macOS ругается: правый клик → Открыть);
 - `UltimateTranceGate-Windows.zip` — скопируй `Ultimate Trance Gate.vst3` в `C:\Program Files\Common Files\VST3`.
 
-Потом пересканируй плагины в DAW. Подробно — `README.txt` внутри архива.
+Потом пересканируй плагины в DAW. Подробно — `README.txt` внутри архива. Полное руководство — [docs/MANUAL.md](docs/MANUAL.md).
 
 ## Что умеет
 
