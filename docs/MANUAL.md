@@ -24,16 +24,19 @@ Ultimate Trance Gate режет звук по ритмическому патт�
 
 ### Mac
 
-1. Скачай UltimateTranceGate-macOS.zip и распакуй его.
-2. В папке «Ultimate Trance Gate (Mac)» дважды кликни install_mac.command. Скрипт положит VST3 и AU в ~/Library/Audio/Plug-Ins, снимет карантин и подпишет плагин.
-3. Если macOS не даёт открыть скрипт: правый клик → Открыть. На macOS 15 и новее: Системные настройки → Конфиденциальность и безопасность → внизу «Всё равно открыть», затем снова двойной клик.
-4. Перезапусти Ableton.
+1. Скачай UltimateTranceGate-2.0.0-Mac-Installer.pkg и закрой DAW.
+2. Дважды кликни установщик → Продолжить → Установить, введи пароль Mac. VST3 и AU встанут в /Library/Audio/Plug-Ins. Кнопкой «Настроить» можно поставить только VST3 или только AU.
+3. Если macOS не даёт открыть установщик: правый клик → Открыть. На macOS 15 и новее: Системные настройки → Конфиденциальность и безопасность → внизу «Всё равно открыть».
+4. Открой Ableton и пересканируй плагины (см. ниже).
+
+Если раньше плагин ставился через install_mac.command, установщик сам уберёт старую копию, чтобы в DAW не было двух одинаковых. Архив UltimateTranceGate-macOS.zip с install_mac.command остаётся для ручной установки.
 
 ### Windows
 
-1. Скачай UltimateTranceGate-Windows.zip и распакуй.
-2. Скопируй папку Ultimate Trance Gate.vst3 в C:\Program Files\Common Files\VST3.
-3. Перезапусти DAW и пересканируй плагины.
+1. Скачай UltimateTranceGate-2.0.0-Windows-Setup.exe и закрой DAW.
+2. Запусти → Далее → Установить. Плагин встанет в C:\Program Files\Common Files\VST3.
+3. Если SmartScreen предупреждает: «Подробнее» → «Выполнить в любом случае».
+4. Перезапусти DAW и пересканируй плагины. Удалить можно через «Параметры → Приложения».
 
 ### Подключение в Ableton Live 11
 
@@ -232,9 +235,9 @@ RANDOM открывает меню:
 
 ## Частые вопросы
 
-**Плагина нет в Ableton.** Проверь, что в Settings → Plug-ins включено Use VST3 Plug-in System Folders, и нажми Rescan. На Mac плагин должен лежать в ~/Library/Audio/Plug-Ins/VST3/Ultimate Trance Gate.vst3.
+**Плагина нет в Ableton.** Проверь, что в Settings → Plug-ins включено Use VST3 Plug-in System Folders, и нажми Rescan. На Mac плагин лежит в /Library/Audio/Plug-Ins/VST3 (после установщика) или в ~/Library/Audio/Plug-Ins/VST3 (после install_mac.command).
 
-**macOS пишет, что плагин повреждён или не проверен.** Запусти install_mac.command ещё раз: он снимает карантин и подписывает плагин. Потом перезапусти Ableton.
+**macOS пишет, что плагин повреждён или не проверен.** Запусти установщик ещё раз: он снимает карантин и подписывает плагин. Потом перезапусти Ableton.
 
 **Закрыл панель фильтра, как вернуть?** Кликни по активной кнопке LPF или HPF ещё раз.
 
