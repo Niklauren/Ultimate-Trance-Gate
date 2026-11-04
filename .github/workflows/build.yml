@@ -1,0 +1,91 @@
+name: Build plugin
+
+# Every push to main builds macOS (VST3 + AU, Apple Silicon + Intel) and Windows (VST3).
+# Pushing a tag like v2.0.0 also publishes a GitHub Release with both zips for download.
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+
+      - name: Build
+        run: cmake --build build --config Release -j4
+
+      - name: Package
+        run: |
+          D="dist/Ultimate Trance Gate (Mac)"
+          mkdir -p "$D"
+          cp -R "build/UltimateTranceGate_artefacts/Release/VST3/Ultimate Trance Gate.vst3" "$D/"
+          cp -R "build/UltimateTranceGate_artefacts/Release/AU/Ultimate Trance Gate.component" "$D/"
+          for p in "$D"/*.vst3 "$D"/*.component; do codesign --force --deep --sign - "$p"; done
+          cp install_mac.command "$D/"
+          chmod +x "$D/install_mac.command"
+          cp docs/INSTALL.txt "$D/README.txt"
+          cd dist && ditto -c -k --keepParent "Ultimate Trance Gate (Mac)" UltimateTranceGate-macOS.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: UltimateTranceGate-macOS
+          path: dist/UltimateTranceGate-macOS.zip
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -A x64
+
+      - name: Build
+        run: cmake --build build --config Release -j4
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $d = "dist/Ultimate Trance Gate (Windows)"
+          New-Item -ItemType Directory -Force -Path $d | Out-Null
+          Copy-Item -Recurse "build/UltimateTranceGate_artefacts/Release/VST3/Ultimate Trance Gate.vst3" "$d/"
+          Copy-Item "docs/INSTALL.txt" "$d/README.txt"
+          Compress-Archive -Path $d -DestinationPath "dist/UltimateTranceGate-Windows.zip"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: UltimateTranceGate-Windows
+          path: dist/UltimateTranceGate-Windows.zip
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [macos, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: Ultimate Trance Gate ${{ github.ref_name }}
+          body: |
+            **Ultimate Trance Gate** — created by mikita_laurenau ([Instagram](https://www.instagram.com/mikita_laurenau/))
+
+            Download the zip for your system:
+            - **Mac** (Apple Silicon + Intel, VST3 + AU): `UltimateTranceGate-macOS.zip` → unzip → double-click `install_mac.command` (if macOS blocks it: right-click → Open).
+            - **Windows** (VST3): `UltimateTranceGate-Windows.zip` → copy `Ultimate Trance Gate.vst3` into `C:\Program Files\Common Files\VST3`.
+
+            Then rescan plug-ins in your DAW. Full guide: README.txt inside the zip.
+          files: |
+            dist/UltimateTranceGate-macOS.zip
+            dist/UltimateTranceGate-Windows.zip

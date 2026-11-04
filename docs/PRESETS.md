@@ -1,6 +1,20 @@
-# Ultimate Trance Gate - preset library
+# Ultimate Trance Gate — preset library
 
 `X`=100% `x`=70% `o`=40% `,`=20% `.`=off `-`=tie `2/3/4`=ratchet
+
+
+## Standard
+
+| Preset | Grid | Pattern |
+|---|---|---|
+| Sunrise Gate | 16 x 1/16 | `X.XX.XX.X.XX.X.X` |
+| Rhythm Stab 3-3-2 | 16 x 1/16 | `X..X..X.X..X..X.` |
+| Rage Chop | 16 x 1/16 | `X-.X-.X.X-.X2.4.` |
+| Gallop Gate | 16 x 1/16 | `X.XXX.XXX.XXX.XX` |
+| KBBB Roll | 16 x 1/16 | `.XXX.XXX.XXX.XXX` |
+| Supersaw Stutter | 16 x 1/16 | `4.2.X.3.4.2.X.33` |
+| 3-3-2 Chords | 16 x 1/16 | `X--X--X-X--X--X-` |
+| Build-Up 32 | 32 x 1/16 | `X.X.X.X.X.X.X.X.XXXXXXXX22224444` |
 
 ## Trance
 

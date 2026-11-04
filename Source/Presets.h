@@ -29,6 +29,18 @@ inline const std::vector<PatternPreset>& presetLibrary()
             v.push_back ({ cat, name, PatternData::fromString (pattern, res) });
         };
 
+        //=================================================================== STANDARD (A-H)
+        // The original eight starting rhythms. MIDI notes C1..G1 load them into the current variation.
+        const char* SD = "Standard";
+        add (SD, "Sunrise Gate",      "X.XX .XX. X.XX .X.X");
+        add (SD, "Rhythm Stab 3-3-2", "X..X ..X. X..X ..X.");
+        add (SD, "Rage Chop",         "X-.X -.X. X-.X 2.4.");
+        add (SD, "Gallop Gate",       "X.XX X.XX X.XX X.XX");
+        add (SD, "KBBB Roll",         ".XXX .XXX .XXX .XXX");
+        add (SD, "Supersaw Stutter",  "4.2. X.3. 4.2. X.33");
+        add (SD, "3-3-2 Chords",      "X--X --X- X--X --X-");
+        add (SD, "Build-Up 32",       "X.X. X.X. X.X. X.X.  XXXX XXXX 2222 4444");
+
         //=================================================================== TRANCE
         // 128-140 BPM. Gated supersaw pads/chords, 1/16 grid, offbeat drive.
         const char* T = "Trance";
@@ -331,6 +343,25 @@ inline const std::vector<PatternPreset>& presetLibrary()
         return v;
     }();
     return lib;
+}
+
+// Index of the n-th preset of a category (or -1)
+inline int presetIndex (const juce::String& category, int n)
+{
+    const auto& lib = presetLibrary();
+    for (int i = 0, k = 0; i < (int) lib.size(); ++i)
+        if (lib[(size_t) i].category == category && k++ == n)
+            return i;
+    return -1;
+}
+
+inline int presetIndexByName (const juce::String& category, const juce::String& name)
+{
+    const auto& lib = presetLibrary();
+    for (int i = 0; i < (int) lib.size(); ++i)
+        if (lib[(size_t) i].category == category && lib[(size_t) i].name == name)
+            return i;
+    return -1;
 }
 
 inline juce::StringArray presetCategories()

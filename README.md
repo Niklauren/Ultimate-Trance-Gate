@@ -2,78 +2,60 @@
 
 **created by mikita_laurenau** · [Instagram](https://www.instagram.com/mikita_laurenau/)
 
-Трансгейт-секвенсор в духе Kilohearts Trance Gate, только ритмов намного больше.
-Формат: VST3 и AU для macOS (Apple Silicon и Intel), работает в Ableton Live 11.
+Трансгейт для рейджа, евроденса, транса и EDM: 240 ритмов, вариации A/B/C, гейт громкости или фильтра, живая волна сигнала и перетаскивание ритма в DAW как MIDI.
+VST3 + AU для macOS (Apple Silicon и Intel), VST3 для Windows.
 
-![screenshot](docs/screenshot.png)
+![Ultimate Trance Gate](docs/ui-main.png)
+
+## Скачать
+
+Готовые сборки лежат на странице **[Releases](../../releases)**:
+- `UltimateTranceGate-macOS.zip` — распакуй и дважды кликни `install_mac.command` (если macOS ругается: правый клик → Открыть);
+- `UltimateTranceGate-Windows.zip` — скопируй `Ultimate Trance Gate.vst3` в `C:\Program Files\Common Files\VST3`.
+
+Потом пересканируй плагины в DAW. Подробно — `README.txt` внутри архива.
 
 ## Что умеет
 
-- **8 слотов паттернов (A–H).** Переключаются кнопками, автоматизацией параметра *Pattern* или MIDI-нотами C1–G1 (по хроматике: C1=A, C#1=B, D1=C … G1=H).
-- **До 32 шагов** в каждом паттерне, у каждого слота своя длина и своя сетка: 1/4, 1/8, 1/8T, 1/8D, 1/16, 1/16T, 1/16D, 1/32, 1/32T, 1/64. Нечётная длина даёт полиметрию.
-- **Каждый шаг:** громкость, **ratchet** (2, 3 или 4 повтора внутри шага, для рейджевых роллов и статтеров) и **tie** (легато в следующий шаг, без ретригера).
-- **232 готовых ритма:** папка **Creative** (100 экспериментальных ритмов: нечётные длины, свеллы, глитчи, легато-формы) и жанры Trance, Psytrance / Goa, Eurodance, Hands Up / Dance 2000s, EDM / Big Room, Future Bass, Hardstyle, Rage, Trap / Drill / Plugg, House / Garage, Jersey Club, Techno, Breaks / DnB, плюс Euclidean / Poly и Stutter / FX. Полный список с паттернами: [docs/PRESETS.md](docs/PRESETS.md).
-- **Генераторы:** евклидовы ритмы (HITS и ROT, применяются сразу), Random (Sparse / Medium / Dense / Rage с ратчетами / Mutate 25% / случайные акценты).
-- **Инструменты:** сдвиг ◀▶, реверс, инверсия, x2 (дублировать), /2, Fill, Clear, Copy/Paste между слотами.
-- **Огибающая:** Attack, Decay, Sustain, Release, Gate (сколько шаг остаётся открытым). Реальная форма огибающей рисуется поверх шагов.
-- **Groove / Output:** Swing, Depth (насколько глубоко режет), **Stereo** (правый канал отстаёт на N шагов, получается пинг-понг гейт), Mix.
-- **Подсказки:** если держать мышь над любой ручкой, кнопкой или рядом сетки 2 секунды, появится объяснение, что это и зачем нужно.
-- Синхронизируется с темпом и позицией DAW. Когда транспорт остановлен, крутится сам по себе, так что паттерн можно слушать без запуска проекта.
+- **PRESETS** — 240 ритмов: **Standard A–H**, жанры (Trance, Psytrance, Eurodance, Hands Up, EDM / Big Room, Future Bass, Hardstyle, Rage, Trap / Drill / Plugg, House / Garage, Jersey Club, Techno, Breaks / DnB, Euclidean / Poly, Stutter / FX) и **Creative** (100 экспериментальных). У каждого пресета видны столбики ритма. Есть **поиск** и **★ избранное**. Полный список — [docs/PRESETS.md](docs/PRESETS.md).
+- **VAR A / B / C** — три независимые вариации: у каждой свой ритм и свои ручки. Переключение можно автоматизировать.
+- **Шаги** — до 32, сетка от 1/4 до 1/64 (триоли, точки); на каждом шаге громкость, **ratchet** (2–4 удара) и **tie** (легато).
+- **Режимы гейта** — **VOL** (громкость), **LPF** и **HPF** (гейт открывает и закрывает фильтр; CUTOFF и RESO во всплывающей панели).
+- **Сигнал** — под шагами в реальном времени видно входящий звук (серый) и то, что выходит (голубой).
+- **MIDI** — перетащи кнопку MIDI на дорожку: получится MIDI-клип с этим ритмом.
+- **Undo / Redo**, генераторы **EUCLID** и **RANDOM**, инструменты сдвига, реверса, инверсии, удвоения.
+- **Огибающая** Attack / Decay / Sustain / Release / Gate, **Swing**, **Depth**, **Stereo** (пинг-понг), **Mix**.
+- **MIDI C1–G1** загружают Standard A–H в текущую вариацию.
+- **Подсказки** — наведи мышь на любой элемент на 2 секунды.
 
-## Управление сеткой
-
-| Действие | Что делает |
+| Меню пресетов | Режим фильтра |
 |---|---|
-| Клик по пустому шагу | включить (высота клика = громкость) |
-| Клик по включённому шагу | выключить |
-| Протянуть по шагам | рисовать / стирать |
-| Тянуть вверх-вниз по включённому шагу (или Shift + перетаскивание) | громкость |
-| Двойной клик | шаг на 100% |
-| Правый клик по шагу или клик в ряду TIE | легато в следующий шаг |
-| Клик в ряду RATCHET | 1 → x2 → x3 → x4 (правый клик = сброс) |
+| ![](docs/ui-presets.png) | ![](docs/ui-filter.png) |
 
-## Установка: вариант 1, собрать на своём Mac (≈10 минут)
+## Сборка из исходников
 
-1. Открой Терминал.
-2. `xcode-select --install` (если уже стоит, просто напишет, что установлено).
-3. Перейди в папку проекта и запусти скрипт:
-   ```
-   cd ~/Downloads/TranceGate
-   bash build_mac.sh
-   ```
-   Скрипт сам поставит cmake, скачает JUCE, соберёт, подпишет и положит плагины в
-   `~/Library/Audio/Plug-Ins/VST3` и `~/Library/Audio/Plug-Ins/Components`.
-4. В Ableton: **Settings → Plug-ins → Use VST3 Plug-in System Folders: On → Rescan**.
+Каждый push в `main` собирает плагин в GitHub Actions (Mac + Windows), а тег `v*` публикует релиз.
 
-## Установка: вариант 2, собрать в облаке через GitHub (без Xcode)
+Локально на Mac: `bash build_mac.sh` (поставит cmake, скачает JUCE, соберёт и установит).
 
-1. Создай репозиторий на GitHub и залей туда содержимое папки.
-2. Вкладка **Actions** → workflow **Build macOS** запустится сам (или нажми *Run workflow*).
-3. Скачай артефакт **UltimateTranceGate-macOS**, распакуй и дважды кликни `install_mac.command`
-   (если macOS ругается, сделай правый клик → Открыть).
-
-## Переключение паттернов MIDI-нотами в Ableton
-
-1. Повесь Ultimate Trance Gate на аудиодорожку.
-2. Создай MIDI-дорожку, в **MIDI To** выбери ту аудиодорожку, а ниже выбери **Ultimate Trance Gate**.
-3. Ноты C1…G1 в клипе переключают слоты A…H.
-
-Проще без MIDI: автоматизируй параметр **Pattern** прямо на дорожке.
-
-## Как добавить свои ритмы в библиотеку
-
-Файл `Source/Presets.h`, одна строка на ритм:
+Офлайн-тесты (Linux/Mac):
 ```
-add (R, "My Rhythm", "X-.X -.X. X-.X 2.4.");   // R = категория Rage
+cmake -B build -DTG_BUILD_TESTS=ON && cmake --build build
+./build/UTGRenderTest_artefacts/Release/UTGRenderTest --screenshot
 ```
-`X`=100%, `x`=70%, `o`=40%, `,`=20%, `.`=пауза, `-`=легато, `2/3/4`=ratchet. Пробелы игнорируются.
-Сетку можно указать последним аргументом: `R8T`, `R16T`, `R32` и т.д.
 
-## Для разработчиков
+## Устройство кода
 
-- `Source/GateEngine.h`: DSP (позиция шага, свинг, ратчеты, ADSR).
-- `Source/Pattern.h`: данные паттерна, генераторы, lock-free хранилище для аудиопотока.
-- `Source/StepGrid.cpp`: редактор шагов. `Source/PluginEditor.cpp`: остальной UI.
-- Офлайн-тест: `cmake -B build -DTG_BUILD_TESTS=ON && cmake --build build && ./build/UTGRenderTest_artefacts/Release/UTGRenderTest`
+- `Source/GateEngine.h` — DSP гейта (позиция шага, свинг, ратчеты, ADSR).
+- `Source/PluginProcessor.*` — вариации, режимы фильтра, undo/redo, запись сигнала, сохранение.
+- `Source/Pattern.h`, `Source/Presets.h` — данные паттернов и библиотека ритмов.
+- `Source/PluginEditor.*`, `StepGrid.*`, `PresetBrowser.h`, `UiParts.h`, `Theme.h` — интерфейс.
+- `Source/Tooltips.h` — тексты подсказок. `Source/Settings.h` — избранное и экспорт MIDI.
+- `design/` — макет интерфейса.
 
-Построено на JUCE 8 (лицензия AGPLv3 / коммерческая; для личного использования бесплатно).
+Свои ритмы добавляются строкой в `Source/Presets.h`:
+```
+add (CR, "My Rhythm", "X-.X -.X. X-.X 2.4.");   // X=100% x=70% o=40% ,=20% .=пауза -=легато 2/3/4=ratchet
+```
+
+Построено на JUCE 8 (AGPLv3 / коммерческая лицензия). Шрифт Figtree — SIL Open Font License.

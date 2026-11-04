@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(UltimateTranceGate VERSION 1.1.0 LANGUAGES C CXX)
+project(UltimateTranceGate VERSION 2.0.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -29,8 +29,10 @@ endif()
 # ---- Plugin ----------------------------------------------------------------
 if(APPLE)
     set(TG_FORMATS VST3 AU)
+    set(TG_COPY TRUE)      # installs into ~/Library/Audio/Plug-Ins after building
 else()
     set(TG_FORMATS VST3)
+    set(TG_COPY FALSE)
 endif()
 
 juce_add_plugin(UltimateTranceGate
@@ -44,7 +46,7 @@ juce_add_plugin(UltimateTranceGate
     NEEDS_MIDI_OUTPUT           FALSE
     IS_MIDI_EFFECT              FALSE
     EDITOR_WANTS_KEYBOARD_FOCUS FALSE
-    COPY_PLUGIN_AFTER_BUILD     TRUE
+    COPY_PLUGIN_AFTER_BUILD     ${TG_COPY}
     VST3_CATEGORIES             Fx Dynamics
     AU_MAIN_TYPE                kAudioUnitType_MusicEffect
     BUNDLE_ID                   com.mikitalaurenau.ultimatetrancegate)
@@ -55,6 +57,14 @@ set(TG_SOURCES
     Source/StepGrid.cpp)
 
 target_sources(UltimateTranceGate PRIVATE ${TG_SOURCES})
+
+# Figtree font (SIL Open Font License) embedded as binary data
+juce_add_binary_data(UTGBinaryData SOURCES
+    Resources/fonts/Figtree-Regular.ttf
+    Resources/fonts/Figtree-SemiBold.ttf
+    Resources/fonts/Figtree-Bold.ttf
+    Resources/fonts/Figtree-ExtraBold.ttf)
+set_target_properties(UTGBinaryData PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 set(TG_DEFINITIONS
     JUCE_WEB_BROWSER=0
@@ -68,11 +78,16 @@ if(UNIX AND NOT APPLE)
 endif()
 
 target_compile_definitions(UltimateTranceGate PUBLIC ${TG_DEFINITIONS})
+if(MSVC)
+    target_compile_options(UltimateTranceGate PRIVATE /utf-8)
+endif()
 
 target_link_libraries(UltimateTranceGate
     PRIVATE
+        UTGBinaryData
         juce::juce_audio_processors
         juce::juce_gui_basics
+        juce::juce_dsp
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
@@ -86,6 +101,7 @@ if(TG_BUILD_TESTS)
     target_include_directories(UTGRenderTest PRIVATE Source)
     target_compile_definitions(UTGRenderTest PRIVATE ${TG_DEFINITIONS} JUCE_STANDALONE_APPLICATION=1 JUCE_MODAL_LOOPS_PERMITTED=1)
     target_link_libraries(UTGRenderTest PRIVATE
-        juce::juce_audio_processors juce::juce_audio_formats juce::juce_gui_basics
+        UTGBinaryData
+        juce::juce_audio_processors juce::juce_audio_formats juce::juce_gui_basics juce::juce_dsp
         juce::juce_recommended_config_flags)
 endif()

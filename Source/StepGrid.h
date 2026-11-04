@@ -3,55 +3,21 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <cstring>
 #include "PluginProcessor.h"
+#include "Theme.h"
 
 namespace tg
 {
-namespace colours
-{
-    const juce::Colour bg        { 0xff0e0f15 };
-    const juce::Colour panel     { 0xff161822 };
-    const juce::Colour panelHi   { 0xff1e2130 };
-    const juce::Colour outline   { 0xff2a2e40 };
-    const juce::Colour text      { 0xffd8dbe8 };
-    const juce::Colour textDim   { 0xff7c8199 };
-    const juce::Colour accentA   { 0xff2de2e6 };   // cyan
-    const juce::Colour accentB   { 0xffff2fa8 };   // magenta
-    const juce::Colour accentC   { 0xff9b5cff };   // violet
-}
-
 //==============================================================================
+// Step editor: level bars, ratchet lane, tie lane, gate curve and the live signal view
 class StepGrid : public juce::Component, public juce::TooltipClient
 {
 public:
     explicit StepGrid (TranceGateProcessor& p) : proc (p) {}
 
-    // called from the editor timer
-    void refresh()
-    {
-        const int slot = proc.activePattern.load();
-        const int ver  = proc.patterns[(size_t) slot].getVersion();
-        const auto gp  = proc.getGateParams();
-        const int step = proc.currentStep.load();
-        const double bpm = proc.lastBpm.load();
+    void refresh();                     // called by the editor timer (30 Hz)
+    bool showSignal = true;
 
-        const bool patternChanged = slot != lastSlot || ver != lastVersion;
-        const bool paramsChanged  = std::memcmp (&gp, &lastParams, sizeof (GateParams)) != 0 || std::abs (bpm - lastBpmSeen) > 1.0e-6;
-
-        if (patternChanged || paramsChanged || curve.empty())
-        {
-            lastSlot = slot; lastVersion = ver; lastParams = gp; lastBpmSeen = bpm;
-            pattern = proc.patterns[(size_t) slot].get();
-            computeCurve();
-            repaint();
-        }
-        if (step != lastStep)
-        {
-            lastStep = step;
-            repaint();
-        }
-    }
-
-    void paint (juce::Graphics& g) override;
+    void paint (juce::Graphics&) override;
     void resized() override;
     void mouseDown (const juce::MouseEvent&) override;
     void mouseDrag (const juce::MouseEvent&) override;
@@ -60,12 +26,8 @@ public:
     juce::String getTooltip() override;
 
 private:
-    PatternData current() const { return proc.patterns[(size_t) proc.activePattern.load()].get(); }
-    void commit (const PatternData& d)
-    {
-        proc.patterns[(size_t) proc.activePattern.load()].set (d);
-        refresh();
-    }
+    PatternData current() const { return proc.currentPattern(); }
+    void commit (const PatternData& d, bool newUndoPoint);
 
     int columnAt (float x) const
     {
@@ -77,26 +39,27 @@ private:
         const float w = lane.getWidth() / (float) pattern.length;
         return { lane.getX() + w * (float) i, lane.getY(), w, lane.getHeight() };
     }
-    float levelAt (float y) const
-    {
-        return juce::jlimit (0.05f, 1.0f, 1.0f - (y - bars.getY()) / bars.getHeight());
-    }
+    float levelAt (float y) const { return juce::jlimit (0.05f, 1.0f, 1.0f - (y - bars.getY()) / bars.getHeight()); }
 
     void computeCurve();
 
     TranceGateProcessor& proc;
     PatternData pattern;
-    std::vector<float> curve;
+    std::vector<float> curve;                  // gate amount over one loop (0..1, mix / depth applied)
+    std::array<float, TranceGateProcessor::kSignalBins> inShown {}, outShown {};
+    float signalNorm = 0.0f;
+    bool hasSignal = false;
 
-    juce::Rectangle<float> bars, ratchetLane, tieLane, labels;
+    juce::Rectangle<float> bars, ratchetLane, tieLane, legend, signalButton;
 
     enum class Drag { None, Draw, Erase, Pending, Level };
     Drag drag = Drag::None;
     int dragStartCol = -1, lastDragCol = -1;
-    float dragLevel = 1.0f;
 
-    int lastSlot = -1, lastVersion = -1, lastStep = -2;
+    int lastVersion = -1, lastStep = -2;
     GateParams lastParams;
+    float lastMix = -1.0f, lastDepth = -1.0f;
+    int lastMode = -1;
     double lastBpmSeen = 0.0;
 };
 

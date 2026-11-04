@@ -3,281 +3,307 @@
 #include "Tooltips.h"
 
 using namespace juce;
-namespace col = tg::colours;
+namespace col = tg::ui::col;
+using tg::ui::IconButton;
 
-tg::PatternData TranceGateEditor::clipboard;
-bool TranceGateEditor::clipboardFull = false;
+static constexpr int kW = 1040, kH = 380;
 
 //==============================================================================
-TGLookAndFeel::TGLookAndFeel()
+static IconButton::IconFn chevronIcon (int dir)
 {
-    setColour (ResizableWindow::backgroundColourId, col::bg);
-    setColour (TextButton::buttonColourId, col::panelHi);
-    setColour (TextButton::buttonOnColourId, col::accentB);
-    setColour (TextButton::textColourOffId, col::text);
-    setColour (TextButton::textColourOnId, Colours::white);
-    setColour (ComboBox::backgroundColourId, col::panelHi);
-    setColour (ComboBox::textColourId, col::text);
-    setColour (ComboBox::outlineColourId, col::outline);
-    setColour (ComboBox::arrowColourId, col::accentA);
-    setColour (PopupMenu::backgroundColourId, col::panel);
-    setColour (PopupMenu::textColourId, col::text);
-    setColour (PopupMenu::highlightedBackgroundColourId, col::accentC);
-    setColour (PopupMenu::highlightedTextColourId, Colours::white);
-    setColour (PopupMenu::headerTextColourId, col::accentA);
-    setColour (Label::textColourId, col::text);
-    setColour (Slider::textBoxTextColourId, col::text);
-    setColour (Slider::textBoxOutlineColourId, Colours::transparentBlack);
-    setColour (Slider::textBoxBackgroundColourId, Colours::transparentBlack);
-    setColour (Slider::textBoxHighlightColourId, col::accentC);
-    setColour (TooltipWindow::backgroundColourId, col::panelHi);
-    setColour (TooltipWindow::textColourId, col::text);
-    setColour (TooltipWindow::outlineColourId, col::outline);
-}
-
-void TGLookAndFeel::drawRotarySlider (Graphics& g, int x, int y, int w, int h, float pos,
-                                      float startAngle, float endAngle, Slider&)
-{
-    auto bounds = Rectangle<int> (x, y, w, h).toFloat().reduced (6.0f);
-    const float radius = jmin (bounds.getWidth(), bounds.getHeight()) * 0.5f;
-    const auto centre = bounds.getCentre();
-    const float angle = startAngle + pos * (endAngle - startAngle);
-    const float track = 4.0f;
-
-    Path bg;
-    bg.addCentredArc (centre.x, centre.y, radius - track, radius - track, 0.0f, startAngle, endAngle, true);
-    g.setColour (col::panelHi.brighter (0.15f));
-    g.strokePath (bg, PathStrokeType (track, PathStrokeType::curved, PathStrokeType::rounded));
-
-    if (pos > 0.0f)
+    return [dir] (Graphics& g, Rectangle<float> r, Colour c)
     {
-        Path arc;
-        arc.addCentredArc (centre.x, centre.y, radius - track, radius - track, 0.0f, startAngle, angle, true);
-        g.setGradientFill (ColourGradient (col::accentA, centre.x - radius, centre.y,
-                                           col::accentB, centre.x + radius, centre.y, false));
-        g.strokePath (arc, PathStrokeType (track, PathStrokeType::curved, PathStrokeType::rounded));
-    }
-
-    const float knobR = radius - track * 2.6f;
-    g.setColour (col::panelHi);
-    g.fillEllipse (centre.x - knobR, centre.y - knobR, knobR * 2.0f, knobR * 2.0f);
-    g.setColour (col::outline);
-    g.drawEllipse (centre.x - knobR, centre.y - knobR, knobR * 2.0f, knobR * 2.0f, 1.0f);
-
-    Path pointer;
-    pointer.addRoundedRectangle (-1.5f, -knobR + 3.0f, 3.0f, knobR * 0.45f, 1.5f);
-    g.setColour (Colours::white);
-    g.fillPath (pointer, AffineTransform::rotation (angle).translated (centre));
+        g.setColour (c);
+        g.strokePath (tg::ui::chevron (r.withSizeKeepingCentre (14.0f, 14.0f), dir),
+                      PathStrokeType (2.0f, PathStrokeType::curved, PathStrokeType::rounded));
+    };
 }
 
-void TGLookAndFeel::drawButtonBackground (Graphics& g, Button& b, const Colour&, bool highlighted, bool down)
+static IconButton::IconFn undoIcon (bool redo)
 {
-    auto r = b.getLocalBounds().toFloat().reduced (1.0f);
-    const bool on = b.getToggleState();
-
-    if (on)
-        g.setGradientFill (ColourGradient (col::accentB, r.getX(), r.getY(), col::accentC, r.getRight(), r.getBottom(), false));
-    else
-        g.setColour (down ? col::panelHi.brighter (0.2f) : highlighted ? col::panelHi.brighter (0.1f) : col::panelHi);
-
-    g.fillRoundedRectangle (r, 5.0f);
-    g.setColour (on ? Colours::transparentBlack : col::outline);
-    g.drawRoundedRectangle (r, 5.0f, 1.0f);
+    return [redo] (Graphics& g, Rectangle<float> r, Colour c)
+    {
+        auto b = r.withSizeKeepingCentre (14.0f, 12.0f);
+        Path p;
+        if (! redo)
+        {
+            p.startNewSubPath (b.getX() + 4.0f, b.getY() + 7.5f);
+            p.lineTo (b.getX(), b.getY() + 4.0f);
+            p.lineTo (b.getX() + 4.0f, b.getY() + 0.5f);
+            p.startNewSubPath (b.getX(), b.getY() + 4.0f);
+            p.lineTo (b.getX() + 8.5f, b.getY() + 4.0f);
+            p.quadraticTo (b.getRight(), b.getY() + 4.0f, b.getRight(), b.getY() + 8.0f);
+            p.quadraticTo (b.getRight(), b.getBottom(), b.getX() + 8.0f, b.getBottom());
+            p.lineTo (b.getX() + 6.0f, b.getBottom());
+        }
+        else
+        {
+            p.startNewSubPath (b.getRight() - 4.0f, b.getY() + 7.5f);
+            p.lineTo (b.getRight(), b.getY() + 4.0f);
+            p.lineTo (b.getRight() - 4.0f, b.getY() + 0.5f);
+            p.startNewSubPath (b.getRight(), b.getY() + 4.0f);
+            p.lineTo (b.getRight() - 8.5f, b.getY() + 4.0f);
+            p.quadraticTo (b.getX(), b.getY() + 4.0f, b.getX(), b.getY() + 8.0f);
+            p.quadraticTo (b.getX(), b.getBottom(), b.getRight() - 8.0f, b.getBottom());
+            p.lineTo (b.getRight() - 6.0f, b.getBottom());
+        }
+        g.setColour (c);
+        g.strokePath (p, PathStrokeType (1.8f, PathStrokeType::curved, PathStrokeType::rounded));
+    };
 }
 
-Font TGLookAndFeel::getTextButtonFont (TextButton&, int h)
+static IconButton::IconFn closeIcon()
 {
-    return Font (FontOptions (jmin (13.0f, (float) h * 0.5f), Font::bold));
-}
-
-void TGLookAndFeel::drawComboBox (Graphics& g, int w, int h, bool, int, int, int, int, ComboBox&)
-{
-    auto r = Rectangle<int> (0, 0, w, h).toFloat().reduced (1.0f);
-    g.setColour (col::panelHi);
-    g.fillRoundedRectangle (r, 5.0f);
-    g.setColour (col::outline);
-    g.drawRoundedRectangle (r, 5.0f, 1.0f);
-
-    Path arrow;
-    const float ax = r.getRight() - 14.0f, ay = r.getCentreY();
-    arrow.addTriangle (ax - 4.0f, ay - 2.0f, ax + 4.0f, ay - 2.0f, ax, ay + 3.0f);
-    g.setColour (col::accentA);
-    g.fillPath (arrow);
-}
-
-Font TGLookAndFeel::getComboBoxFont (ComboBox&) { return Font (FontOptions (13.0f, Font::bold)); }
-
-Label* TGLookAndFeel::createSliderTextBox (Slider& s)
-{
-    auto* l = LookAndFeel_V4::createSliderTextBox (s);
-    l->setFont (Font (FontOptions (12.0f)));
-    l->setColour (Label::textColourId, col::text);
-    l->setColour (Label::outlineColourId, Colours::transparentBlack);
-    l->setColour (Label::backgroundColourId, Colours::transparentBlack);
-    return l;
-}
-
-static TextLayout layoutTooltip (const String& text, Colour colour)
-{
-    AttributedString s;
-    s.setJustification (Justification::topLeft);
-    s.setLineSpacing (2.0f);
-    s.append (text, Font (FontOptions (13.0f)), colour);
-    TextLayout tl;
-    tl.createLayout (s, 460.0f);
-    return tl;
-}
-
-Rectangle<int> TGLookAndFeel::getTooltipBounds (const String& tip, Point<int> pos, Rectangle<int> parentArea)
-{
-    const auto tl = layoutTooltip (tip, Colours::white);
-    const int w = (int) std::ceil (tl.getWidth()) + 24;
-    const int h = (int) std::ceil (tl.getHeight()) + 18;
-    const int x = pos.x > parentArea.getCentreX() ? pos.x - (w + 12) : pos.x + 12;
-    const int y = pos.y > parentArea.getCentreY() ? pos.y - (h + 8)  : pos.y + 16;
-    return Rectangle<int> (x, y, w, h).constrainedWithin (parentArea);
-}
-
-void TGLookAndFeel::drawTooltip (Graphics& g, const String& text, int width, int height)
-{
-    const auto r = Rectangle<int> (width, height).toFloat();
-    g.setColour (col::panelHi);
-    g.fillRect (r);
-    g.setColour (col::accentA.withAlpha (0.7f));
-    g.drawRect (r, 1.0f);
-    g.setColour (col::accentA);
-    g.fillRect (r.withWidth (3.0f));
-    layoutTooltip (text, col::text).draw (g, r.reduced (14.0f, 9.0f).withTrimmedLeft (0.0f));
+    return [] (Graphics& g, Rectangle<float> r, Colour c)
+    {
+        auto b = r.withSizeKeepingCentre (8.0f, 8.0f);
+        g.setColour (c);
+        g.drawLine ({ b.getTopLeft(), b.getBottomRight() }, 2.0f);
+        g.drawLine ({ b.getTopRight(), b.getBottomLeft() }, 2.0f);
+    };
 }
 
 //==============================================================================
-TranceGateEditor::TranceGateEditor (TranceGateProcessor& owner)
-    : AudioProcessorEditor (&owner), proc (owner), grid (owner)
+TranceGateEditor::FilterPanel::FilterPanel (AudioProcessorValueTreeState& s)
+    : cutoff (s, "cutoff", "CUTOFF", col::orange, tg::tips::cutoff()),
+      reso   (s, "reso",   "RESO",   col::orange, tg::tips::reso()),
+      close ("close", closeIcon())
 {
-    setLookAndFeel (&lnf);
+    cutoff.setPointerColour (col::text);
+    reso.setPointerColour (col::text);
+    close.framed = false;
+    close.setTooltip (tg::tips::closeFilter());
+    addAndMakeVisible (cutoff);
+    addAndMakeVisible (reso);
+    addAndMakeVisible (close);
+}
 
-    //---------------------------------------------------------------- slots
-    for (int i = 0; i < tg::kNumPatterns; ++i)
+void TranceGateEditor::FilterPanel::paint (Graphics& g)
+{
+    auto r = getLocalBounds().toFloat().withTrimmedBottom (8.0f).reduced (0.5f);
+    DropShadow (Colours::black.withAlpha (0.5f), 20, { 0, 10 }).drawForRectangle (g, r.toNearestInt());
+    Path p;
+    p.addRoundedRectangle (r, 14.0f);
+    const float ax = 34.0f;   // pointer towards the mode switch
+    p.startNewSubPath (ax - 7.0f, r.getBottom() - 0.5f);
+    p.lineTo (ax, r.getBottom() + 7.0f);
+    p.lineTo (ax + 7.0f, r.getBottom() - 0.5f);
+    p.closeSubPath();
+    g.setColour (col::panel);
+    g.fillPath (p);
+    g.setColour (col::orange);
+    g.drawRoundedRectangle (r, 14.0f, 1.0f);
+    Path tip;   // pointer outline towards the mode switch
+    tip.startNewSubPath (ax - 7.0f, r.getBottom());
+    tip.lineTo (ax, r.getBottom() + 7.0f);
+    tip.lineTo (ax + 7.0f, r.getBottom());
+    g.setColour (col::panel);
+    g.fillRect (ax - 6.0f, r.getBottom() - 1.5f, 12.0f, 2.0f);
+    g.setColour (col::orange);
+    g.strokePath (tip, PathStrokeType (1.0f));
+    tg::ui::drawTracked (g, title, { 12.0f, 8.0f, r.getWidth() - 40.0f, 16.0f }, 10.0f, 800, col::orange2, Justification::centredLeft, 0.14f);
+}
+
+void TranceGateEditor::FilterPanel::resized()
+{
+    close.setBounds (getWidth() - 30, 6, 22, 22);
+    cutoff.setBounds (12, 32, 116, 50);
+    reso.setBounds (132, 32, 110, 50);
+}
+
+//==============================================================================
+TranceGateEditor::TranceGateEditor (TranceGateProcessor& p)
+    : AudioProcessorEditor (&p), proc (p),
+      prevPreset ("prev", chevronIcon (0)), nextPreset ("next", chevronIcon (1)),
+      undoButton ("undo", undoIcon (false)), redoButton ("redo", undoIcon (true)),
+      grid (p), filterPanel (p.apvts), browser (p, *settings)
+{
+    setLookAndFeel (&look);
+    setOpaque (true);
+
+    //---------------------------------------------------------------- header
+    credit.setButtonText ("created by mikita_laurenau");
+    credit.setURL (URL ("https://www.instagram.com/mikita_laurenau/"));
+    credit.setFont (tg::ui::font (11.5f, 500), false, Justification::centredLeft);
+    credit.setTooltip ("instagram.com/mikita_laurenau");
+    addAndMakeVisible (credit);
+
+    prevPreset.setTooltip (tg::tips::prevPreset());
+    nextPreset.setTooltip (tg::tips::nextPreset());
+    auto step = [this] (int d)
     {
-        auto& b = slotButtons[(size_t) i];
-        b.setButtonText (String::charToString ((juce_wchar) ('A' + i)));
-        b.setClickingTogglesState (false);
-        b.setTooltip (tg::tips::slot ((char) ('A' + i), MidiMessage::getMidiNoteName (36 + i, true, true, 3)));
-        b.onClick = [this, i] { proc.selectPatternFromGui (i); };
+        const auto& lib = tg::presetLibrary();
+        int idx = proc.presetIndex[(size_t) proc.getVariation()].load();
+        if (idx < 0) idx = 0;
+        const auto& cat = lib[(size_t) idx].category;
+        Array<int> inCat;
+        for (int i = 0; i < (int) lib.size(); ++i) if (lib[(size_t) i].category == cat) inCat.add (i);
+        const int pos = jmax (0, inCat.indexOf (idx));
+        proc.loadPreset (inCat[(pos + d + inCat.size()) % inCat.size()]);
+        syncControls();
+    };
+    prevPreset.onClick = [step] { step (-1); };
+    nextPreset.onClick = [step] { step (1); };
+    addAndMakeVisible (prevPreset);
+    addAndMakeVisible (nextPreset);
+
+    presetDisplay.setTooltip (tg::tips::presetButton());
+    presetDisplay.onClick = [this] { showPresetBrowser (! browser.isVisible()); };
+    addAndMakeVisible (presetDisplay);
+
+    for (int v = 0; v < TranceGateProcessor::kNumVariations; ++v)
+    {
+        auto& b = varButtons[(size_t) v];
+        b.setButtonText (String::charToString ((juce_wchar) ('A' + v)));
+        b.getProperties().set ("fontSize", 13.0f);
+        b.getProperties().set ("weight", 800);
+        b.getProperties().set ("noOutline", true);
+        b.setColour (TextButton::buttonColourId, Colours::transparentBlack);
+        b.setColour (TextButton::textColourOffId, col::text2);
+        b.setTooltip (tg::tips::variation ((char) ('A' + v)));
+        b.onClick = [this, v] { proc.selectVariation (v); syncControls(); };
         addAndMakeVisible (b);
     }
 
-    //---------------------------------------------------------------- credits
-    const URL insta ("https://www.instagram.com/mikita_laurenau/");
-    auto setupLink = [this, insta] (HyperlinkButton& l, const String& text, Justification j, Colour c)
-    {
-        l.setButtonText (text);
-        l.setURL (insta);
-        l.setFont (Font (FontOptions (11.5f)), false, j);
-        l.setColour (HyperlinkButton::textColourId, c);
-        l.setTooltip ("instagram.com/mikita_laurenau");
-        addAndMakeVisible (l);
-    };
-    setupLink (creditLink, "created by mikita_laurenau", Justification::centredLeft, col::textDim);
-    setupLink (instaLink, "Instagram: @mikita_laurenau", Justification::centredRight, col::accentA);
+    //---------------------------------------------------------------- pattern row
+    undoButton.setTooltip (tg::tips::undo());
+    redoButton.setTooltip (tg::tips::redo());
+    undoButton.onClick = [this] { proc.undo(); syncControls(); grid.refresh(); };
+    redoButton.onClick = [this] { proc.redo(); syncControls(); grid.refresh(); };
+    addAndMakeVisible (undoButton);
+    addAndMakeVisible (redoButton);
 
-    presetButton.setTooltip (tg::tips::presets());
-    presetButton.onClick = [this] { showPresetMenu(); };
-    addAndMakeVisible (presetButton);
-
-    //---------------------------------------------------------------- pattern settings
-    auto setupLabel = [this] (Label& l, const String& t)
-    {
-        l.setText (t, dontSendNotification);
-        l.setFont (FontOptions (11.0f, Font::bold));
-        l.setColour (Label::textColourId, col::textDim);
-        l.setJustificationType (Justification::centredRight);
-        addAndMakeVisible (l);
-    };
-    setupLabel (lengthLabel, "STEPS");
-    setupLabel (resLabel, "RATE");
-    setupLabel (euclidLabel, "EUCLID");
-    setupLabel (hitsLabel, "HITS");
-    setupLabel (rotLabel, "ROT");
-
-    auto setupIncDec = [this] (Slider& s, int lo, int hi)
-    {
-        s.setSliderStyle (Slider::IncDecButtons);
-        s.setRange (lo, hi, 1);
-        s.setTextBoxStyle (Slider::TextBoxLeft, false, 34, 26);
-        s.setIncDecButtonsMode (Slider::incDecButtonsDraggable_Vertical);
-        s.setColour (Slider::textBoxOutlineColourId, col::outline);
-        s.setColour (Slider::textBoxBackgroundColourId, col::panel);
-        addAndMakeVisible (s);
-    };
-    setupIncDec (lengthSlider, 1, tg::kMaxSteps);
-    setupIncDec (hitsSlider, 0, tg::kMaxSteps);
-    setupIncDec (rotSlider, 0, tg::kMaxSteps - 1);
-    hitsSlider.setValue (5, dontSendNotification);
-
-    lengthSlider.onValueChange = [this]
+    steps.setTooltip (tg::tips::steps());
+    steps.onChange = [this] (int n)
     {
         if (syncing) return;
-        auto p = edit();
-        const int newLen = (int) lengthSlider.getValue();
-        for (int i = p.length; i < newLen; ++i) p.steps[(size_t) i] = {};   // fresh steps start empty
-        p.length = newLen;
-        commit (p);
+        auto pt = edit();
+        for (int i = pt.length; i < n; ++i) pt.steps[(size_t) i] = {};
+        pt.length = n;
+        commit (pt);
     };
-
-    hitsSlider.onValueChange = [this] { if (! syncing) applyEuclid(); };
-    rotSlider.onValueChange  = [this] { if (! syncing) applyEuclid(); };
-    hitsSlider.setTooltip (tg::tips::hits());
-    rotSlider.setTooltip (tg::tips::rot());
-    hitsLabel.setTooltip (tg::tips::hits());
-    rotLabel.setTooltip (tg::tips::rot());
-    euclidLabel.setTooltip (tg::tips::hits());
-    lengthSlider.setTooltip (tg::tips::steps());
-    lengthLabel.setTooltip (tg::tips::steps());
-    resLabel.setTooltip (tg::tips::rate());
+    addAndMakeVisible (steps);
 
     for (int i = 0; i < (int) tg::resolutions().size(); ++i)
-        resBox.addItem (tg::resolutions()[(size_t) i].name, i + 1);
-    resBox.onChange = [this]
+        rate.addItem (tg::resolutions()[(size_t) i].name, i + 1);
+    rate.setTooltip (tg::tips::rate());
+    rate.onChange = [this]
     {
         if (syncing) return;
-        auto p = edit();
-        p.resolution = resBox.getSelectedId() - 1;
-        commit (p);
+        auto pt = edit();
+        pt.resolution = rate.getSelectedId() - 1;
+        commit (pt);
     };
-    resBox.setTooltip (tg::tips::rate());
-    addAndMakeVisible (resBox);
+    addAndMakeVisible (rate);
 
+    hits.labelWidth = 46.0f;
+    rot.labelWidth = 26.0f;
+    hits.setValue (5);
+    hits.setTooltip (tg::tips::hits());
+    rot.setTooltip (tg::tips::rot());
+    hits.onChange = [this] (int) { if (! syncing) applyEuclid(); };
+    rot.onChange  = [this] (int) { if (! syncing) applyEuclid(); };
+    addAndMakeVisible (hits);
+    addAndMakeVisible (rot);
+
+    randomButton.setColour (TextButton::buttonColourId, col::orange);
+    randomButton.setColour (TextButton::textColourOffId, col::bg);
+    randomButton.getProperties().set ("noOutline", true);
+    randomButton.getProperties().set ("weight", 800);
     randomButton.setTooltip (tg::tips::random());
     randomButton.onClick = [this] { showRandomMenu(); };
     addAndMakeVisible (randomButton);
 
-    //---------------------------------------------------------------- tools
-    setupSmallButton (shiftL, "<<",   tg::tips::shiftL(),  [this] { auto p = edit(); p.shift (-1); commit (p); });
-    setupSmallButton (shiftR, ">>",   tg::tips::shiftR(), [this] { auto p = edit(); p.shift (1);  commit (p); });
-    setupSmallButton (revB,   "REV",  tg::tips::rev(),             [this] { auto p = edit(); p.reverse(); commit (p); });
-    setupSmallButton (invB,   "INV",  tg::tips::inv(), [this] { auto p = edit(); p.invert();  commit (p); });
-    setupSmallButton (dupB,   "x2",   tg::tips::dup(), [this] { auto p = edit(); p.duplicate(); commit (p); });
-    setupSmallButton (halfB,  "/2",   tg::tips::half(),        [this] { auto p = edit(); p.halve(); commit (p); });
-    setupSmallButton (fillB,  "FILL", tg::tips::fill(),        [this] { auto p = edit(); p.fill();  commit (p); });
-    setupSmallButton (clrB,   "CLR",  tg::tips::clr(),       [this] { auto p = edit(); p.clear(); commit (p); });
-    setupSmallButton (copyB,  "COPY", tg::tips::copy(),        [this] { clipboard = edit(); clipboardFull = true; });
-    setupSmallButton (pasteB, "PASTE",tg::tips::paste(), [this] { if (clipboardFull) commit (clipboard); });
+    const char* toolNames[] = { "<<", ">>", "REV", "INV", "x2", "/2", "FILL", "CLR" };
+    const String toolTips[] = { tg::tips::shiftL(), tg::tips::shiftR(), tg::tips::rev(), tg::tips::inv(),
+                                tg::tips::dup(), tg::tips::half(), tg::tips::fill(), tg::tips::clr() };
+    for (int i = 0; i < 8; ++i)
+    {
+        auto& b = tools[(size_t) i];
+        b.setButtonText (toolNames[i]);
+        b.getProperties().set ("fontSize", 10.0f);
+        b.setTooltip (toolTips[i]);
+        b.onClick = [this, i]
+        {
+            auto pt = edit();
+            switch (i)
+            {
+                case 0: pt.shift (-1); break;
+                case 1: pt.shift (1); break;
+                case 2: pt.reverse(); break;
+                case 3: pt.invert(); break;
+                case 4: pt.duplicate(); break;
+                case 5: pt.halve(); break;
+                case 6: pt.fill(); break;
+                default: pt.clear(); break;
+            }
+            commit (pt);
+        };
+        addAndMakeVisible (b);
+    }
+
+    midiDrag.setTooltip (tg::tips::midi());
+    midiDrag.makeFile = [this]
+    {
+        const int idx = proc.presetIndex[(size_t) proc.getVariation()].load();
+        const auto name = idx >= 0 ? tg::presetLibrary()[(size_t) idx].name : String ("Custom Gate");
+        return tg::writePatternMidi (edit(), proc.getGateParams().gate, name);
+    };
+    addAndMakeVisible (midiDrag);
 
     addAndMakeVisible (grid);
 
-    //---------------------------------------------------------------- knobs
-    setupKnob (attack,  "attack",  "ATTACK",  tg::tips::attack());
-    setupKnob (decay,   "decay",   "DECAY",   tg::tips::decay());
-    setupKnob (sustain, "sustain", "SUSTAIN", tg::tips::sustain());
-    setupKnob (release, "release", "RELEASE", tg::tips::release());
-    setupKnob (gate,    "gate",    "GATE",    tg::tips::gate());
-    setupKnob (swing,   "swing",   "SWING",   tg::tips::swing());
-    setupKnob (depth,   "depth",   "DEPTH",   tg::tips::depth());
-    setupKnob (stereo,  "stereo",  "STEREO",  tg::tips::stereo());
-    setupKnob (mix,     "mix",     "MIX",     tg::tips::mix());
+    //---------------------------------------------------------------- mode + knobs
+    const char* modeNames[] = { "VOL", "LPF", "HPF" };
+    const String modeTips[] = { tg::tips::modeVol(), tg::tips::modeLp(), tg::tips::modeHp() };
+    for (int m = 0; m < 3; ++m)
+    {
+        auto& b = modeButtons[(size_t) m];
+        b.setButtonText (modeNames[m]);
+        b.getProperties().set ("fontSize", 9.0f);
+        b.getProperties().set ("weight", 800);
+        b.getProperties().set ("radius", 5.0f);
+        b.getProperties().set ("noOutline", true);
+        b.setColour (TextButton::buttonColourId, col::raised);
+        b.setColour (TextButton::textColourOffId, col::text2);
+        b.setTooltip (modeTips[m]);
+        b.onClick = [this, m]
+        {
+            if (m == proc.getMode() && m != TranceGateProcessor::ModeVolume)
+                filterPanelOpen = ! filterPanelOpen;
+            else
+            {
+                proc.selectMode (m);
+                filterPanelOpen = m != TranceGateProcessor::ModeVolume;
+            }
+            syncControls();
+        };
+        addAndMakeVisible (b);
+    }
 
-    setSize (960, 620);
+    struct K { const char* id; const char* label; String tip; };
+    const K list[] = {
+        { "attack", "ATTACK", tg::tips::attack() }, { "decay", "DECAY", tg::tips::decay() },
+        { "sustain", "SUSTAIN", tg::tips::sustain() }, { "release", "RELEASE", tg::tips::release() },
+        { "gate", "GATE", tg::tips::gate() }, { "swing", "SWING", tg::tips::swing() },
+        { "depth", "DEPTH", tg::tips::depth() }, { "stereo", "STEREO", tg::tips::stereo() },
+        { "mix", "MIX", tg::tips::mix() } };
+    for (auto& k : list)
+    {
+        knobs.push_back (std::make_unique<tg::ui::KnobItem> (proc.apvts, k.id, k.label, col::blue, k.tip));
+        addAndMakeVisible (*knobs.back());
+    }
+
+    filterPanel.close.onClick = [this] { filterPanelOpen = false; syncControls(); };
+    addChildComponent (filterPanel);
+
+    //---------------------------------------------------------------- preset browser (overlay)
+    dismiss.onClick = [this] { showPresetBrowser (false); };
+    addChildComponent (dismiss);
+    browser.onClose = [this] { showPresetBrowser (false); };
+    addChildComponent (browser);
+
+    setSize (kW, kH);
     syncControls();
     startTimerHz (30);
 }
@@ -288,88 +314,34 @@ TranceGateEditor::~TranceGateEditor()
     setLookAndFeel (nullptr);
 }
 
-void TranceGateEditor::setupKnob (Knob& k, const String& paramId, const String& name, const String& tip)
-{
-    k.slider.setTooltip (tip);
-    k.label.setTooltip (tip);
-    k.slider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    k.slider.setTextBoxStyle (Slider::TextBoxBelow, false, 80, 18);
-    k.slider.setColour (Slider::textBoxOutlineColourId, Colours::transparentBlack);
-    k.slider.setRotaryParameters (MathConstants<float>::pi * 1.25f, MathConstants<float>::pi * 2.75f, true);
-    addAndMakeVisible (k.slider);
-    k.attachment = std::make_unique<Attachment> (proc.apvts, paramId, k.slider);
-
-    k.label.setText (name, dontSendNotification);
-    k.label.setFont (FontOptions (11.0f, Font::bold));
-    k.label.setColour (Label::textColourId, col::textDim);
-    k.label.setJustificationType (Justification::centred);
-    addAndMakeVisible (k.label);
-}
-
-void TranceGateEditor::setupSmallButton (TextButton& b, const String& text, const String& tip, std::function<void()> fn)
-{
-    b.setButtonText (text);
-    b.setTooltip (tip);
-    b.onClick = std::move (fn);
-    addAndMakeVisible (b);
-}
-
 //==============================================================================
-tg::PatternData TranceGateEditor::edit() const
+void TranceGateEditor::showPresetBrowser (bool show)
 {
-    return proc.patterns[(size_t) proc.activePattern.load()].get();
-}
-
-void TranceGateEditor::commit (const tg::PatternData& p)
-{
-    proc.patterns[(size_t) proc.activePattern.load()].set (p);
+    if (show)
+        browser.openAt (proc.presetIndex[(size_t) proc.getVariation()].load());
+    dismiss.setVisible (show);
+    browser.setVisible (show);
+    if (show) { dismiss.toFront (false); browser.toFront (false); }
     syncControls();
-    grid.refresh();
 }
 
-void TranceGateEditor::syncControls()
+bool TranceGateEditor::keyPressed (const KeyPress& k)
 {
-    const ScopedValueSetter<bool> svs (syncing, true);
-    const auto p = edit();
-    lengthSlider.setValue (p.length, dontSendNotification);
-    resBox.setSelectedId (p.resolution + 1, dontSendNotification);
-    hitsSlider.setRange (0, p.length, 1);
-    rotSlider.setRange (0, jmax (1, p.length - 1), 1);
-
-    const int slot = proc.activePattern.load();
-    for (int i = 0; i < tg::kNumPatterns; ++i)
-        slotButtons[(size_t) i].setToggleState (i == slot, dontSendNotification);
-
-    lastSlot = slot;
-    lastVersion = proc.patterns[(size_t) slot].getVersion();
+    if (k.getModifiers().isCommandDown() && k.getKeyCode() == 'Z')
+    {
+        if (k.getModifiers().isShiftDown()) proc.redo(); else proc.undo();
+        syncControls();
+        grid.refresh();
+        return true;
+    }
+    return false;
 }
 
 void TranceGateEditor::applyEuclid()
 {
-    auto p = edit();
-    p.euclid ((int) hitsSlider.getValue(), (int) rotSlider.getValue());
-    commit (p);
-}
-
-void TranceGateEditor::showPresetMenu()
-{
-    PopupMenu menu;
-    const auto& lib = tg::presetLibrary();
-    for (auto& cat : tg::presetCategories())
-    {
-        PopupMenu sub;
-        for (int i = 0; i < (int) lib.size(); ++i)
-            if (lib[(size_t) i].category == cat)
-                sub.addItem (i + 1, lib[(size_t) i].name + "   (" + String (lib[(size_t) i].data.length) + " x "
-                                    + tg::resolutions()[(size_t) lib[(size_t) i].data.resolution].name + ")");
-        menu.addSubMenu (cat, sub);
-    }
-
-    menu.showMenuAsync (PopupMenu::Options().withTargetComponent (&presetButton),
-                        [this] (int r)
-                        {
-                            if (r > 0) commit (tg::presetLibrary()[(size_t) r - 1].data);
-                        });
+    auto pt = edit();
+    pt.euclid (hits.getValue(), rot.getValue());
+    commit (pt);
 }
 
 void TranceGateEditor::showRandomMenu()
@@ -385,116 +357,177 @@ void TranceGateEditor::showRandomMenu()
     menu.addSectionHeader ("Modify current");
     menu.addItem (5, "Mutate 25%");
     menu.addItem (6, "Random accents");
-
     menu.showMenuAsync (PopupMenu::Options().withTargetComponent (&randomButton),
                         [this] (int r)
                         {
                             if (r <= 0) return;
                             const RM modes[] = { RM::Sparse, RM::Medium, RM::Dense, RM::Rage, RM::Mutate, RM::Accents };
-                            auto p = edit();
-                            p.randomise (modes[r - 1], rng);
-                            commit (p);
+                            auto pt = edit();
+                            pt.randomise (modes[r - 1], rng);
+                            commit (pt);
                         });
 }
 
 //==============================================================================
+void TranceGateEditor::syncControls()
+{
+    const ScopedValueSetter<bool> svs (syncing, true);
+    const int v = proc.getVariation();
+    const auto pt = edit();
+    const int idx = proc.presetIndex[(size_t) v].load();
+    const auto& lib = tg::presetLibrary();
+
+    if (idx >= 0)
+    {
+        const auto& pr = lib[(size_t) idx];
+        presetDisplay.name = pr.name;
+        presetDisplay.category = pr.category;
+        presetDisplay.badge = pr.category == "Standard" ? String::charToString ((juce_wchar) ('A' + (idx - tg::presetIndex ("Standard", 0)))) : String();
+        presetDisplay.fav = settings->isFavourite (idx);
+    }
+    else
+    {
+        presetDisplay.name = "Custom pattern";
+        presetDisplay.category = "Custom";
+        presetDisplay.badge = {};
+        presetDisplay.fav = false;
+    }
+    presetDisplay.edited = proc.presetEdited[(size_t) v].load();
+    presetDisplay.pattern = pt;
+    presetDisplay.open = browser.isVisible();
+    presetDisplay.repaint();
+
+    for (int i = 0; i < TranceGateProcessor::kNumVariations; ++i)
+    {
+        auto& b = varButtons[(size_t) i];
+        b.setToggleState (i == v, dontSendNotification);
+    }
+
+    undoButton.setEnabled (proc.canUndo());
+    redoButton.setEnabled (proc.canRedo());
+
+    steps.setValue (pt.length);
+    rate.setSelectedId (pt.resolution + 1, dontSendNotification);
+    hits.setRange (0, pt.length);
+    rot.setRange (0, jmax (0, pt.length - 1));
+
+    const int mode = proc.getMode();
+    for (int m = 0; m < 3; ++m)
+    {
+        auto& b = modeButtons[(size_t) m];
+        b.setToggleState (m == mode, dontSendNotification);
+        b.showCaret = m != TranceGateProcessor::ModeVolume;
+        b.caretUp = ! filterPanelOpen;
+        b.repaint();
+    }
+    filterPanel.title = mode == TranceGateProcessor::ModeHighPass ? "HIGH-PASS FILTER" : "LOW-PASS FILTER";
+    filterPanel.setVisible (mode != TranceGateProcessor::ModeVolume && filterPanelOpen);
+    filterPanel.repaint();
+
+    lastVersion = proc.stateVersion.load();
+}
+
 void TranceGateEditor::timerCallback()
 {
-    const int slot = proc.activePattern.load();
-    if (slot != lastSlot || proc.patterns[(size_t) slot].getVersion() != lastVersion)
+    // cheap checks: re-sync when the processor state, mode or undo availability changed
+    const int mode = proc.getMode();
+    if (proc.stateVersion.load() != lastVersion || mode != lastModeSeen
+        || undoButton.isEnabled() != proc.canUndo() || redoButton.isEnabled() != proc.canRedo())
+    {
+        lastModeSeen = mode;
         syncControls();
+    }
     grid.refresh();
+}
+
+//==============================================================================
+Rectangle<int> TranceGateEditor::varGroupBounds() const
+{
+    return { kW - 20 - 132, 13, 132, 38 };
 }
 
 void TranceGateEditor::paint (Graphics& g)
 {
     g.fillAll (col::bg);
 
-    // header
-    auto header = getLocalBounds().removeFromTop (56).toFloat();
-    g.setGradientFill (ColourGradient (col::panel, 0, 0, col::bg, 0, header.getBottom(), false));
-    g.fillRect (header);
+    // title
+    AttributedString title;
+    const auto tf = tg::ui::font (21.0f, 800).withExtraKerningFactor (-0.02f);
+    title.append ("Ultimate Trance ", tf, col::text);
+    title.append ("Gate", tf, col::orange);
+    title.setWordWrap (AttributedString::none);
+    title.draw (g, { 20.0f, 11.0f, 230.0f, 24.0f });
 
-    g.setFont (FontOptions (22.0f, Font::bold));
-    g.setGradientFill (ColourGradient (col::accentA, 18.0f, 0, col::accentB, 300.0f, 0, false));
-    g.drawText ("ULTIMATE TRANCE GATE", 18, 6, 310, 28, Justification::centredLeft);
+    // variation group
+    auto vg = varGroupBounds().toFloat().reduced (0.5f);
+    g.setColour (col::panel);
+    g.fillRoundedRectangle (vg, 10.0f);
+    g.setColour (col::line);
+    g.drawRoundedRectangle (vg, 10.0f, 1.0f);
+    tg::ui::drawTracked (g, "VAR", { vg.getX() + 8.0f, vg.getY(), 30.0f, vg.getHeight() }, 9.0f, 700, col::dim, Justification::centredLeft, 0.14f);
 
-    // knob section titles
-    g.setFont (FontOptions (11.0f, Font::bold));
-    g.setColour (col::textDim);
-    g.drawText ("ENVELOPE", 18, 432, 200, 14, Justification::centredLeft);
-    g.drawText ("GROOVE / OUTPUT", 18 + 5 * 100 + 30, 432, 200, 14, Justification::centredLeft);
+    // knob row panel
+    auto kr = Rectangle<float> (20.0f, 286.0f, (float) kW - 40.0f, 76.0f).reduced (0.5f);
+    g.setColour (col::panel);
+    g.fillRoundedRectangle (kr, 16.0f);
+    g.setColour (col::line);
+    g.drawRoundedRectangle (kr, 16.0f, 1.0f);
+    if (knobs.size() > 5)
+    {
+        const float x = (float) knobs[5]->getX() - 7.0f;
+        g.drawVerticalLine ((int) x, kr.getY() + 10.0f, kr.getBottom() - 10.0f);
+    }
+}
 
-    g.setColour (col::outline);
-    g.drawVerticalLine (18 + 5 * 100 + 14, 440.0f, 590.0f);
-
-    // footer hint
-    g.setFont (FontOptions (11.0f));
-    g.setColour (col::textDim.withAlpha (0.8f));
-    g.drawText ("Click = on/off   Drag across = paint   Drag up/down on a step = level   Right-click = tie   "
-                "MIDI C1-G1 = patterns A-H", getLocalBounds().removeFromBottom (24).reduced (18, 0).withTrimmedRight (200),
-                Justification::centredLeft);
+void TranceGateEditor::paintOverChildren (Graphics& g)
+{
+    auto r = rate.getBounds().toFloat();
+    tg::ui::drawTracked (g, "RATE", { r.getX() + 9.0f, r.getY(), 40.0f, r.getHeight() }, 9.0f, 700, col::dim, Justification::centredLeft, 0.14f);
 }
 
 void TranceGateEditor::resized()
 {
     // header
+    credit.setBounds (17, 34, 200, 16);
+    const auto vg = varGroupBounds();
+    for (int v = 0; v < TranceGateProcessor::kNumVariations; ++v)
+        varButtons[(size_t) v].setBounds (vg.getX() + 34 + v * 32, vg.getY() + 4, 30, 30);
+    const int px = 244, pr = vg.getX() - 10;
+    prevPreset.setBounds (px, 13, 28, 38);
+    nextPreset.setBounds (pr - 28, 13, 28, 38);
+    presetDisplay.setBounds (px + 32, 13, pr - px - 64, 38);
+
+    // pattern row
+    const int y = 60, h = 28;
+    undoButton.setBounds (20, y, 30, h);
+    redoButton.setBounds (54, y, 30, h);
+    steps.setBounds (90, y, 120, h);
+    rate.setBounds (216, y, 94, h);
+    hits.setBounds (316, y, 126, h);
+    rot.setBounds (446, y, 106, h);
+    randomButton.setBounds (558, y, 86, h);
+    midiDrag.setBounds (kW - 20 - 64, y, 64, h);
+    int tx = midiDrag.getX() - 6 - (8 * 34 + 7 * 3);
+    for (auto& b : tools) { b.setBounds (tx, y, 34, h); tx += 37; }
+
+    // grid
+    grid.setBounds (20, 96, kW - 40, 182);
+
+    // mode + knobs
+    for (int m = 0; m < 3; ++m)
+        modeButtons[(size_t) m].setBounds (30, 292 + m * 22, 50, 20);
+    const int kx0 = 90, kx1 = kW - 28;
+    const int n = (int) knobs.size();
+    const float kw = (float) (kx1 - kx0 - 14) / (float) n;
+    for (int i = 0; i < n; ++i)
     {
-        const int slotW = 38, gap = 6;
-        int x = 340;
-        for (auto& b : slotButtons) { b.setBounds (x, 12, slotW, 32); x += slotW + gap; }
-        creditLink.setBounds (17, 32, 220, 18);
-        presetButton.setBounds (getWidth() - 18 - 140, 12, 140, 32);
+        const int extra = i >= 5 ? 14 : 0;   // gap for the divider before SWING
+        knobs[(size_t) i]->setBounds (kx0 + extra + roundToInt (kw * (float) i), 296, roundToInt (kw) - 2, 56);
     }
 
-    // row 1: pattern settings + generators
-    {
-        int x = 18;
-        const int y = 66, h = 28;
-        lengthLabel.setBounds (x, y, 46, h); x += 50;
-        lengthSlider.setBounds (x, y, 92, h); x += 104;
-        resLabel.setBounds (x, y, 40, h); x += 44;
-        resBox.setBounds (x, y, 84, h); x += 110;
-        euclidLabel.setBounds (x, y, 56, h); x += 58;
-        hitsLabel.setBounds (x, y, 36, h); x += 38;
-        hitsSlider.setBounds (x, y, 92, h); x += 100;
-        rotLabel.setBounds (x, y, 30, h); x += 32;
-        rotSlider.setBounds (x, y, 92, h); x += 112;
-        randomButton.setBounds (getWidth() - 18 - 140, y, 140, h);
-    }
+    filterPanel.setBounds (20, 286 - 8 - 100, 256, 100);
 
-    // row 2: tools
-    {
-        int x = 18;
-        const int y = 102, h = 26, w = 56, gap = 6;
-        for (auto* b : { &shiftL, &shiftR, &revB, &invB, &dupB, &halfB, &fillB, &clrB })
-        {
-            b->setBounds (x, y, w, h);
-            x += w + gap;
-        }
-        pasteB.setBounds (getWidth() - 18 - 66, y, 66, h);
-        copyB.setBounds (pasteB.getX() - 6 - 66, y, 66, h);
-    }
-
-    grid.setBounds (12, 136, getWidth() - 24, 288);
-    instaLink.setBounds (getWidth() - 18 - 210, getHeight() - 24, 210, 24);
-
-    // knobs
-    {
-        const int y = 450, kw = 100, kh = 112;
-        int x = 18;
-        for (auto* k : { &attack, &decay, &sustain, &release, &gate })
-        {
-            k->label.setBounds (x, y, kw, 14);
-            k->slider.setBounds (x, y + 16, kw, kh);
-            x += kw;
-        }
-        x += 30;
-        for (auto* k : { &swing, &depth, &stereo, &mix })
-        {
-            k->label.setBounds (x, y, kw, 14);
-            k->slider.setBounds (x, y + 16, kw, kh);
-            x += kw;
-        }
-    }
+    // overlay
+    dismiss.setBounds (getLocalBounds());
+    browser.setBounds (px + 32, 56, 660, 304);
 }

@@ -4,24 +4,9 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include "PluginProcessor.h"
 #include "StepGrid.h"
-
-//==============================================================================
-class TGLookAndFeel : public juce::LookAndFeel_V4
-{
-public:
-    TGLookAndFeel();
-
-    void drawRotarySlider (juce::Graphics&, int x, int y, int w, int h, float pos,
-                           float startAngle, float endAngle, juce::Slider&) override;
-    void drawButtonBackground (juce::Graphics&, juce::Button&, const juce::Colour&,
-                               bool highlighted, bool down) override;
-    juce::Font getTextButtonFont (juce::TextButton&, int buttonHeight) override;
-    void drawComboBox (juce::Graphics&, int w, int h, bool down, int bx, int by, int bw, int bh, juce::ComboBox&) override;
-    juce::Font getComboBoxFont (juce::ComboBox&) override;
-    juce::Label* createSliderTextBox (juce::Slider&) override;
-    juce::Rectangle<int> getTooltipBounds (const juce::String& tip, juce::Point<int> pos, juce::Rectangle<int> parentArea) override;
-    void drawTooltip (juce::Graphics&, const juce::String& text, int width, int height) override;
-};
+#include "UiParts.h"
+#include "PresetBrowser.h"
+#include "Settings.h"
 
 //==============================================================================
 class TranceGateEditor : public juce::AudioProcessorEditor, private juce::Timer
@@ -31,55 +16,69 @@ public:
     ~TranceGateEditor() override;
 
     void paint (juce::Graphics&) override;
+    void paintOverChildren (juce::Graphics&) override;
     void resized() override;
+
+    // used by the offline test to show the menu / filter panel in screenshots
+    void showPresetBrowser (bool show);
+    void showFilterPanel (bool show) { filterPanelOpen = show; syncControls(); }
+    bool keyPressed (const juce::KeyPress&) override;
 
 private:
     void timerCallback() override;
-
-    tg::PatternData edit() const;
-    void commit (const tg::PatternData&);
     void syncControls();
-    void showPresetMenu();
+    tg::PatternData edit() const { return proc.currentPattern(); }
+    void commit (const tg::PatternData& p) { proc.editPattern (p, true); syncControls(); grid.refresh(); }
     void showRandomMenu();
     void applyEuclid();
+    juce::Rectangle<int> varGroupBounds() const;
 
-    using Attachment = juce::AudioProcessorValueTreeState::SliderAttachment;
-
-    struct Knob
+    struct Dismiss : public juce::Component
     {
-        juce::Slider slider;
-        juce::Label  label;
-        std::unique_ptr<Attachment> attachment;
+        std::function<void()> onClick;
+        void mouseDown (const juce::MouseEvent&) override { if (onClick) onClick(); }
     };
 
-    void setupKnob (Knob&, const juce::String& paramId, const juce::String& name, const juce::String& tip);
-    void setupSmallButton (juce::TextButton&, const juce::String& text, const juce::String& tip, std::function<void()> fn);
+    struct FilterPanel : public juce::Component
+    {
+        FilterPanel (juce::AudioProcessorValueTreeState& s);
+        void paint (juce::Graphics&) override;
+        void resized() override;
+        juce::String title;
+        tg::ui::KnobItem cutoff, reso;
+        tg::ui::IconButton close;
+    };
 
     TranceGateProcessor& proc;
-    TGLookAndFeel lnf;
-    juce::TooltipWindow tooltips { this, 2000 };   // tips appear after 2 s hover
+    tg::ui::Look look;
+    juce::SharedResourcePointer<tg::Settings> settings;
+    juce::TooltipWindow tooltips { this, 2000 };
 
-    std::array<juce::TextButton, tg::kNumPatterns> slotButtons;
-    juce::TextButton presetButton { "PRESETS" };
+    juce::HyperlinkButton credit;
+    tg::ui::IconButton prevPreset, nextPreset;
+    tg::ui::PresetDisplay presetDisplay;
+    std::array<juce::TextButton, TranceGateProcessor::kNumVariations> varButtons;
 
-    juce::HyperlinkButton creditLink, instaLink;
-
-    juce::Label lengthLabel, resLabel, euclidLabel, hitsLabel, rotLabel;
-    juce::Slider lengthSlider, hitsSlider, rotSlider;
-    juce::ComboBox resBox;
+    tg::ui::IconButton undoButton, redoButton;
+    tg::ui::Stepper steps { "STEPS", 1, tg::kMaxSteps };
+    juce::ComboBox rate;
+    tg::ui::Stepper hits { "EUCLID", 0, tg::kMaxSteps }, rot { "ROT", 0, tg::kMaxSteps - 1 };
     juce::TextButton randomButton { "RANDOM" };
-
-    juce::TextButton shiftL, shiftR, revB, invB, dupB, halfB, clrB, fillB, copyB, pasteB;
+    std::array<juce::TextButton, 8> tools;
+    tg::ui::MidiDragButton midiDrag;
 
     tg::StepGrid grid;
 
-    Knob attack, decay, sustain, release, gate, swing, depth, stereo, mix;
+    std::array<tg::ui::ModeButton, 3> modeButtons;
+    std::vector<std::unique_ptr<tg::ui::KnobItem>> knobs;
+    FilterPanel filterPanel;
+    bool filterPanelOpen = true;
+
+    Dismiss dismiss;
+    tg::ui::PresetBrowser browser;
 
     std::mt19937 rng { std::random_device{}() };
-    static tg::PatternData clipboard;
-    static bool clipboardFull;
-
-    int lastSlot = -1, lastVersion = -1;
+    int lastVersion = -1, lastModeSeen = -1;
     bool syncing = false;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TranceGateEditor)

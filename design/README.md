@@ -9,4 +9,4 @@ Live canvas (claude.ai): https://claude.ai/artifact/CLVan13Q6SHLPn7fG3xiyp
 - `Mix50.dc.html` - the same screen with Mix at 50%.
 - `Groovebox.dc.html`, `BlackRage.dc.html` - the two alternative directions (B, C).
 
-Note: the plugin code in `Source/` still has the previous (original) UI; the new design is not ported yet.
+The plugin code implements this design since v2.0.0 (variation chain was dropped).

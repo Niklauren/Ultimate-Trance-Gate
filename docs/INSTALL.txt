@@ -1,0 +1,49 @@
+ULTIMATE TRANCE GATE  ·  created by mikita_laurenau  ·  instagram.com/mikita_laurenau
+==================================================================================
+
+----------------------------------------------------------------------------------
+РУССКИЙ
+----------------------------------------------------------------------------------
+MAC (Apple Silicon и Intel, VST3 + AU)
+ 1. Распакуй архив.
+ 2. Дважды кликни install_mac.command.
+    Если macOS пишет «не удаётся проверить разработчика»: правый клик по файлу ->
+    Открыть -> Открыть.
+ 3. Перезапусти DAW и пересканируй плагины.
+    Ableton: Settings -> Plug-ins -> включи «Use VST3 Plug-in System Folders» и
+    «Use Audio Units» -> Rescan.
+
+ Вручную: скопируй «Ultimate Trance Gate.vst3» в ~/Library/Audio/Plug-Ins/VST3,
+ «Ultimate Trance Gate.component» в ~/Library/Audio/Plug-Ins/Components, затем в
+ Терминале:
+   xattr -cr ~/Library/Audio/Plug-Ins/VST3/"Ultimate Trance Gate.vst3"
+   xattr -cr ~/Library/Audio/Plug-Ins/Components/"Ultimate Trance Gate.component"
+
+WINDOWS (VST3)
+ 1. Распакуй архив.
+ 2. Скопируй папку «Ultimate Trance Gate.vst3» в C:\Program Files\Common Files\VST3
+ 3. Пересканируй плагины в DAW.
+
+КАК ПОЛЬЗОВАТЬСЯ
+ Повесь плагин на дорожку с пэдом, аккордами или лидом и запусти проект.
+ PRESETS — библиотека из 240 ритмов (Standard A–H, жанры, Creative), поиск и избранное.
+ VAR A/B/C — три варианта настройки, переключай и сравнивай.
+ VOL/LPF/HPF — гейт громкости или фильтра. MIDI — перетащи ритм в DAW как MIDI-клип.
+ Наведи мышь на любую ручку на 2 секунды — появится подсказка.
+
+----------------------------------------------------------------------------------
+ENGLISH
+----------------------------------------------------------------------------------
+MAC (Apple Silicon + Intel, VST3 + AU)
+ 1. Unzip.
+ 2. Double-click install_mac.command
+    If macOS blocks it: right-click the file -> Open -> Open.
+ 3. Restart your DAW and rescan plug-ins.
+
+WINDOWS (VST3)
+ 1. Unzip.
+ 2. Copy "Ultimate Trance Gate.vst3" into C:\Program Files\Common Files\VST3
+ 3. Rescan plug-ins in your DAW.
+
+Hover any control for 2 seconds to see what it does.
+Font: Figtree (SIL Open Font License).
