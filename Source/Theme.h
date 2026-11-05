@@ -174,9 +174,10 @@ public:
 
     void positionComboBoxText (juce::ComboBox& box, juce::Label& label) override
     {
-        label.setBounds (box.getLocalBounds().withTrimmedRight (16).withTrimmedLeft (2));
+        const bool left = (bool) box.getProperties().getWithDefault ("leftText", false);
+        label.setBounds (box.getLocalBounds().withTrimmedRight (16).withTrimmedLeft (left ? 4 : 2));
         label.setFont (font (12.0f, 600));
-        label.setJustificationType (juce::Justification::centredRight);
+        label.setJustificationType (left ? juce::Justification::centredLeft : juce::Justification::centredRight);
     }
 
     void drawPopupMenuBackground (juce::Graphics& g, int w, int h) override

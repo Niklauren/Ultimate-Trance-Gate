@@ -62,6 +62,8 @@ private:
     tg::ui::IconButton undoButton, redoButton;
     tg::ui::Stepper steps { "STEPS", 1, tg::kMaxSteps };
     juce::ComboBox rate;
+    juce::ComboBox character;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> characterAttach;
     tg::ui::Stepper hits { "EUCLID", 0, tg::kMaxSteps }, rot { "ROT", 0, tg::kMaxSteps - 1 };
     juce::TextButton randomButton { "RANDOM" };
     std::array<juce::TextButton, 8> tools;

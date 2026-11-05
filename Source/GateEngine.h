@@ -8,13 +8,23 @@ namespace tg
 {
 struct GateParams
 {
-    float attackMs  = 1.0f;
+    float attackMs  = 4.0f;
     float decayMs   = 150.0f;
-    float sustain   = 1.0f;
-    float releaseMs = 25.0f;
-    float gate      = 0.75f;  // fraction of a (sub)step the gate stays open
+    float sustain   = 0.5f;
+    float releaseMs = 40.0f;
+    float gate      = 1.0f;   // fraction of a (sub)step the gate stays open
     float swing     = 0.0f;   // 0..1  (1 = second 16th pushed to the triplet-ish 75%)
+    int   character = 0;      // Character enum below
 };
+
+// Envelope character: the shape of the attack and release curves.
+enum Character { CharSmooth = 0, CharHard, CharSoft, CharPump, kNumCharacters };
+
+inline const juce::StringArray& characterNames()
+{
+    static const juce::StringArray n { "Smooth", "Hard", "Soft", "Pump" };
+    return n;
+}
 
 //==============================================================================
 // Where are we inside the pattern for a given musical position (in quarter notes)?
@@ -65,6 +75,7 @@ public:
     void reset() noexcept
     {
         value = 0.0f;
+        out = 0.0f;
         stage = Idle;
         lastAbs = std::numeric_limits<int64_t>::min();
         lastSub = -1;
@@ -75,6 +86,10 @@ public:
         params = p;
         const double msToSamples = sr * 0.001;
         attackInc   = (float) (1.0 / juce::jmax (1.0, p.attackMs * msToSamples));
+        releaseInc  = (float) (1.0 / juce::jmax (1.0, p.releaseMs * msToSamples));
+        // one-pole on the final gain: Smooth / Pump round the corners, Soft rounds a lot, Hard keeps them
+        const double declickMs = p.character == CharHard ? 0.0 : (p.character == CharSoft ? 2.5 : 0.35);
+        declickCoef = declickMs <= 0.0 ? 0.0f : (float) std::exp (-1.0 / (declickMs * msToSamples));
         decayCoef   = coefFor (p.decayMs * msToSamples);
         releaseCoef = coefFor (p.releaseMs * msToSamples);
     }
@@ -113,7 +128,7 @@ public:
         return tick();
     }
 
-    float getValue() const noexcept { return value; }
+    float getValue() const noexcept { return out; }
 
 private:
     enum Stage { Idle, Attack, Decay, Release };
@@ -124,23 +139,48 @@ private:
         return (float) std::exp (-4.6 / juce::jmax (1.0, samples));
     }
 
-    void trigger (float level) noexcept { peak = level; stage = Attack; }
+    // Attack moves from wherever the gain is now to the step level along an S-curve
+    // (raised cosine): no corner at the start or the end, so short attacks do not click.
+    // It also glides DOWN when a quieter step follows a louder one, instead of jumping.
+    void trigger (float level) noexcept
+    {
+        peak = level;
+        from = value;
+        phase = 0.0f;
+        stage = Attack;
+    }
 
     void glideTo (float level) noexcept
     {
-        peak = level;
-        stage = value < peak ? Attack : Decay;
+        if (value < level) trigger (level);
+        else { peak = level; stage = Decay; }
     }
 
-    void release() noexcept { if (stage != Idle) stage = Release; }
+    void release() noexcept
+    {
+        if (stage != Idle && stage != Release) { relFrom = value; stage = Release; }
+    }
+
+    // attack curve 0..1 -> 0..1 for each character
+    float attackShape (float p) const noexcept
+    {
+        switch (params.character)
+        {
+            case CharHard: return p;                                                       // straight line, corners at both ends
+            case CharSoft: return (1.0f - std::exp (-5.0f * p)) / (1.0f - std::exp (-5.0f)); // fast start, gentle landing (analog VCA)
+            case CharPump: return p * p * p;                                               // slow start, sucks in at the end (sidechain feel)
+            default:       return 0.5f - 0.5f * std::cos (juce::MathConstants<float>::pi * p); // S-curve, no corners
+        }
+    }
 
     float tick() noexcept
     {
         switch (stage)
         {
             case Attack:
-                value += attackInc;
-                if (value >= peak) { value = peak; stage = Decay; }
+                phase += attackInc;
+                if (phase >= 1.0f) { value = peak; stage = Decay; }
+                else value = from + (peak - from) * attackShape (phase);
                 break;
             case Decay:
             {
@@ -149,7 +189,10 @@ private:
                 break;
             }
             case Release:
-                value *= releaseCoef;
+                if (params.character == CharHard)
+                    value -= relFrom * releaseInc;          // straight line down, hard stop at the release time
+                else
+                    value *= releaseCoef;                   // natural exponential tail
                 if (value < 1.0e-5f) { value = 0.0f; stage = Idle; }
                 break;
             case Idle:
@@ -157,13 +200,15 @@ private:
                 value = 0.0f;
                 break;
         }
-        return value;
+        // de-click: rounds the remaining corners (step jumps, release onset) without softening the rhythm
+        out = value + (out - value) * declickCoef;
+        return out;
     }
 
     double sr = 44100.0;
     GateParams params;
-    float value = 0.0f, peak = 1.0f;
-    float attackInc = 0.01f, decayCoef = 0.999f, releaseCoef = 0.99f;
+    float value = 0.0f, peak = 1.0f, from = 0.0f, phase = 0.0f, out = 0.0f, relFrom = 1.0f;
+    float attackInc = 0.01f, decayCoef = 0.999f, releaseCoef = 0.99f, releaseInc = 0.01f, declickCoef = 0.9f;
     Stage stage = Idle;
     int64_t lastAbs = std::numeric_limits<int64_t>::min();
     int lastSub = -1;

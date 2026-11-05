@@ -2,7 +2,7 @@
 ; Built in CI:  ISCC /DAppVersion=2.0.0 /DSourceDir=<dir with Ultimate Trance Gate.vst3> /DOutDir=dist installer\windows\UltimateTranceGate.iss
 
 #ifndef AppVersion
-  #define AppVersion "2.0.0"
+  #define AppVersion "2.1.0"
 #endif
 #ifndef SourceDir
   #define SourceDir "..\..\build\UltimateTranceGate_artefacts\Release\VST3"
@@ -54,8 +54,8 @@ Name: "ru"; MessagesFile: "compiler:Languages\Russian.isl"
 Name: "en"; MessagesFile: "compiler:Default.isl"
 
 [CustomMessages]
-ru.WelcomeExtra=Ритмический трансгейт: 240 пресетов по жанрам, вариации A/B/C, режимы громкости и фильтра.%n%nПлагин VST3 будет установлен в стандартную папку VST3. Перед установкой закрой DAW.%n%ncreated by mikita_laurenau
-en.WelcomeExtra=Rhythmic trance gate: 240 genre presets, A/B/C variations, volume and filter gate modes.%n%nThe VST3 plug-in goes into the standard VST3 folder. Please close your DAW before installing.%n%ncreated by mikita_laurenau
+ru.WelcomeExtra=Ритмический трансгейт: 241 пресет по жанрам, вариации A/B/C, режимы громкости и фильтра.%n%nПлагин VST3 будет установлен в стандартную папку VST3. Перед установкой закрой DAW.%n%ncreated by mikita_laurenau
+en.WelcomeExtra=Rhythmic trance gate: 241 genre presets, A/B/C variations, volume and filter gate modes.%n%nThe VST3 plug-in goes into the standard VST3 folder. Please close your DAW before installing.%n%ncreated by mikita_laurenau
 ru.DirHint=Папка для VST3. Оставь как есть, если не знаешь, что менять: её находят все DAW.
 en.DirHint=VST3 folder. Keep the default unless you know otherwise: every DAW scans it.
 ru.Done=Готово. Открой DAW и пересканируй плагины (Ableton: Settings → Plug-ins → Use VST3 Plug-in System Folders → Rescan). Плагин появится у производителя mikita_laurenau.

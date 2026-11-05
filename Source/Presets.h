@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Pattern.h"
+#include "GateEngine.h"
 #include <vector>
 
 namespace tg
@@ -44,6 +45,9 @@ inline const std::vector<PatternPreset>& presetLibrary()
         //=================================================================== TRANCE
         // 128-140 BPM. Gated supersaw pads/chords, 1/16 grid, offbeat drive.
         const char* T = "Trance";
+        // Classic Gate = the Kilohearts Trance Gate start-up pattern (16 x 1/32, two tied groups of three).
+        // It is what a new instance starts on (variation A).
+        add (T, "Classic Gate",        "X.X. X--. X.X. X--.", R32);
         add (T, "Pure Sixteenths",     "XXXX XXXX XXXX XXXX");
         add (T, "Offbeat Pulse",       "..X. ..X. ..X. ..X.");
         add (T, "Gallop Gate",         "X.XX X.XX X.XX X.XX");
@@ -344,6 +348,130 @@ inline const std::vector<PatternPreset>& presetLibrary()
     }();
     return lib;
 }
+
+//==============================================================================
+// Envelope that comes with a preset: Character + ADSR + Gate.
+// Loading a preset sets these knobs too (not Swing / Depth / Stereo / Mix / mode / filter).
+//==============================================================================
+struct PresetEnvelope
+{
+    int   character;
+    float attackMs, decayMs, sustain, releaseMs, gate;
+};
+
+namespace env
+{
+    //                                     character   A     D     S     R     Gate
+    constexpr PresetEnvelope classic     { CharSmooth, 4.0f, 150,  0.50f, 40,  1.00f };  // Kilohearts start-up feel
+    constexpr PresetEnvelope trance      { CharSmooth, 2.0f, 200,  0.80f, 35,  0.85f };  // gated pads: crisp, no clicks
+    constexpr PresetEnvelope tranceLong  { CharSmooth, 6.0f, 300,  0.90f, 90,  1.00f };  // legato / anthem
+    constexpr PresetEnvelope psyBass     { CharSmooth, 1.0f, 80,   0.55f, 15,  0.80f };  // tight rolling bass
+    constexpr PresetEnvelope euroStab    { CharSmooth, 1.0f, 110,  0.30f, 50,  0.60f };  // short 90s stabs, piano, organ
+    constexpr PresetEnvelope euroPulse   { CharSmooth, 2.0f, 160,  0.70f, 40,  0.75f };  // eighths, strings, leads
+    constexpr PresetEnvelope handsUp     { CharSmooth, 2.0f, 180,  0.75f, 30,  0.85f };  // supersaw leads
+    constexpr PresetEnvelope bigRoom     { CharSmooth, 1.0f, 160,  0.60f, 50,  0.75f };
+    constexpr PresetEnvelope bigStab     { CharSmooth, 1.0f, 140,  0.40f, 60,  0.70f };  // festival stabs, horns, plucks
+    constexpr PresetEnvelope pump        { CharPump,   45.0f, 200, 1.00f, 50,  1.00f };  // sidechain ducking
+    constexpr PresetEnvelope swell       { CharPump,   120.0f, 300, 1.00f, 80, 1.00f };  // reverse / swelling notes
+    constexpr PresetEnvelope futureChord { CharSoft,   8.0f, 250,  0.70f, 90,  0.90f };  // lush chords
+    constexpr PresetEnvelope hardLead    { CharSmooth, 2.0f, 200,  0.85f, 40,  0.90f };  // euphoric hardstyle leads
+    constexpr PresetEnvelope screech     { CharHard,   0.5f, 100,  0.90f, 10,  0.85f };  // rawstyle screeches
+    constexpr PresetEnvelope rage        { CharHard,   0.5f, 120,  0.90f, 12,  0.80f };  // rage chops: hard edges
+    constexpr PresetEnvelope rageHalf    { CharHard,   0.5f, 200,  0.85f, 25,  0.85f };  // half-time / dark rage
+    constexpr PresetEnvelope roll        { CharHard,   0.5f, 80,   0.90f, 8,   0.85f };  // rolls, risers, fills
+    constexpr PresetEnvelope glitch      { CharHard,   0.3f, 60,   1.00f, 5,   0.90f };  // stutters, glitches
+    constexpr PresetEnvelope trap        { CharSmooth, 3.0f, 250,  0.70f, 70,  0.85f };  // plugg, 808 glides
+    constexpr PresetEnvelope houseChord  { CharSmooth, 1.5f, 130,  0.35f, 60,  0.55f };  // offbeat chords, organ
+    constexpr PresetEnvelope garage      { CharSmooth, 1.5f, 120,  0.45f, 50,  0.60f };
+    constexpr PresetEnvelope jersey      { CharHard,   0.8f, 100,  0.75f, 18,  0.75f };
+    constexpr PresetEnvelope techno      { CharSmooth, 1.5f, 120,  0.50f, 30,  0.70f };
+    constexpr PresetEnvelope rumble      { CharSoft,   5.0f, 300,  0.60f, 80,  0.95f };
+    constexpr PresetEnvelope dnb         { CharHard,   0.5f, 90,   0.65f, 15,  0.75f };
+    constexpr PresetEnvelope poly        { CharSmooth, 3.0f, 160,  0.65f, 45,  0.85f };
+    constexpr PresetEnvelope tapeStop    { CharSmooth, 1.0f, 300,  0.20f, 40,  1.00f };
+    constexpr PresetEnvelope softPad     { CharSoft,   25.0f, 400, 0.85f, 200, 1.00f };  // breathing, slow, ambient
+    constexpr PresetEnvelope pluck       { CharSmooth, 0.5f, 90,   0.15f, 40,  0.60f };  // ticks, drops, heartbeats
+    constexpr PresetEnvelope dub         { CharSoft,   3.0f, 300,  0.40f, 250, 0.70f };
+    constexpr PresetEnvelope creative    { CharSmooth, 4.0f, 200,  0.65f, 60,  0.90f };
+}
+
+inline PresetEnvelope presetEnvelope (const juce::String& category, const juce::String& name)
+{
+    auto has = [&name] (std::initializer_list<const char*> words)
+    {
+        for (auto* w : words) if (name.containsIgnoreCase (w)) return true;
+        return false;
+    };
+
+    juce::String cat = category;
+    if (cat == "Standard")   // the starting rhythms take the envelope of their genre
+    {
+        if (has ({ "Rage", "Supersaw Stutter" })) cat = "Rage";
+        else if (has ({ "Rhythm Stab" }))          cat = "Eurodance";
+        else if (has ({ "KBBB" }))                 cat = "Psytrance / Goa";
+        else if (has ({ "Chords" }))               cat = "Future Bass";
+        else                                       cat = "Trance";
+    }
+
+    if (name == "Classic Gate") return env::classic;
+
+    if (cat == "Rage")
+        return has ({ "Half-Time", "Dark", "Vamp" }) ? env::rageHalf : env::rage;
+
+    // keywords that mean the same thing in every genre
+    if (has ({ "Swell" }))                          return env::swell;
+    if (has ({ "Pump", "Sidechain", "Ducked" }))    return env::pump;
+
+    if (cat == "Trance")           return has ({ "Legato" }) ? env::tranceLong : env::trance;
+    if (cat == "Psytrance / Goa")  return has ({ "Glitch" }) ? env::glitch : env::psyBass;
+    if (cat == "Eurodance")        return has ({ "Stab", "Piano", "Organ", "Pizzicato" }) ? env::euroStab : env::euroPulse;
+    if (cat == "Hands Up / Dance 2000s") return has ({ "Stab" }) ? env::euroStab : env::handsUp;
+    if (cat == "EDM / Big Room")
+    {
+        if (has ({ "Roll", "Riser" }))                  return env::roll;
+        if (has ({ "Stab", "Horn", "Pluck", "Bass" }))  return env::bigStab;
+        return env::bigRoom;
+    }
+    if (cat == "Future Bass")
+    {
+        if (has ({ "Stutter", "Roll" })) return env::roll;
+        return env::futureChord;
+    }
+    if (cat == "Hardstyle")
+    {
+        if (has ({ "Screech", "Anti-Climax" })) return env::screech;
+        if (has ({ "Stab" }))                   return env::bigStab;
+        if (has ({ "Roll", "Fill" }))           return env::roll;
+        return env::hardLead;
+    }
+    if (cat == "Trap / Drill / Plugg") return has ({ "Glitch" }) ? env::glitch : (has ({ "Roll" }) ? env::roll : env::trap);
+    if (cat == "House / Garage")   return has ({ "Garage", "2-Step", "Swung" }) ? env::garage : env::houseChord;
+    if (cat == "Jersey Club")      return env::jersey;
+    if (cat == "Techno")           return has ({ "Rumble" }) ? env::rumble : env::techno;
+    if (cat == "Breaks / DnB")     return has ({ "Stutter" }) ? env::glitch : env::dnb;
+    if (cat == "Euclidean / Poly") return env::poly;
+    if (cat == "Stutter / FX")     return has ({ "Tape Stop" }) ? env::tapeStop : env::glitch;
+
+    // Creative: by what the name says
+    if (has ({ "Breath", "Pad", "Tidal", "Long Exposure", "Slow Motion", "Sustain Pedal", "Velvet",
+               "Tape Warble", "Drone", "Legato", "Choir", "Bloom" }))                         return env::softPad;
+    if (has ({ "Glitch", "Stutter", "Ratchet", "Hiccup", "Bit Crush", "Corruption", "Buffer", "Laser",
+               "Granular", "Spray", "Twitch", "Skipping", "Modem", "Digital", "Machine", "Pixel" })) return env::glitch;
+    if (has ({ "Roll", "Hyperdrive" }))                                                       return env::roll;
+    if (has ({ "Heart", "Rain Drops", "Clock", "Typewriter", "Drop", "Tick", "Arcade" }))     return env::pluck;
+    if (has ({ "Dub", "Echo" }))                                                              return env::dub;
+    if (has ({ "Rage" }))     return env::rage;
+    if (has ({ "Euro" }))     return env::euroStab;
+    if (has ({ "Psy" }))      return env::psyBass;
+    if (has ({ "Jersey" }))   return env::jersey;
+    if (has ({ "Garage" }))   return env::garage;
+    if (has ({ "Future" }))   return env::futureChord;
+    if (has ({ "Big Room" })) return env::bigRoom;
+    if (has ({ "Trance" }))   return env::trance;
+    return env::creative;
+}
+
+inline PresetEnvelope presetEnvelope (const PatternPreset& p) { return presetEnvelope (p.category, p.name); }
 
 // Index of the n-th preset of a category (or -1)
 inline int presetIndex (const juce::String& category, int n)

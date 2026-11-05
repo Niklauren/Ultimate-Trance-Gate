@@ -4,6 +4,7 @@
 #include <juce_dsp/juce_dsp.h>
 #include <map>
 #include "GateEngine.h"
+#include "Presets.h"
 
 //==============================================================================
 // Ultimate Trance Gate v2
@@ -106,6 +107,7 @@ private:
     void parameterValueChanged (int, float) override {}
     void parameterGestureChanged (int, bool gestureIsStarting) override;
     void handleAsyncUpdate() override;
+    void applyPresetEnvelope (const tg::PresetEnvelope&);
     void storeKnobsInto (int variation);
     void recallKnobsFrom (int variation);
     void setParam (const juce::String& id, float plainValue);
@@ -138,6 +140,7 @@ private:
     std::atomic<float>* pMix     = nullptr;
     std::atomic<float>* pCutoff  = nullptr;
     std::atomic<float>* pReso    = nullptr;
+    std::atomic<float>* pCharacter = nullptr;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TranceGateProcessor)
 };

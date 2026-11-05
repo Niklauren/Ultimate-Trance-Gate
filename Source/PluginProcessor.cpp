@@ -19,6 +19,7 @@ namespace ids
     static const ParameterID mix       { "mix",       1 };
     static const ParameterID cutoff    { "cutoff",    2 };
     static const ParameterID reso      { "reso",      2 };
+    static const ParameterID character { "character", 3 };
 }
 
 //==============================================================================
@@ -54,12 +55,13 @@ AudioProcessorValueTreeState::ParameterLayout TranceGateProcessor::createLayout(
 
     layout.add (std::make_unique<AudioParameterChoice> (ids::variation, "Variation", StringArray { "A", "B", "C" }, 0));
     layout.add (std::make_unique<AudioParameterChoice> (ids::mode, "Gate Mode", StringArray { "Volume", "Low-pass", "High-pass" }, 0));
+    layout.add (std::make_unique<AudioParameterChoice> (ids::character, "Character", tg::characterNames(), tg::CharSmooth));
 
-    layout.add (std::make_unique<AudioParameterFloat> (ids::attack,  "Attack",  skewed (0.1f, 300.0f, 15.0f),  1.0f,   msAttr()));
+    layout.add (std::make_unique<AudioParameterFloat> (ids::attack,  "Attack",  skewed (0.1f, 300.0f, 15.0f),  4.0f,   msAttr()));
     layout.add (std::make_unique<AudioParameterFloat> (ids::decay,   "Decay",   skewed (1.0f, 2000.0f, 200.0f), 150.0f, msAttr()));
-    layout.add (std::make_unique<AudioParameterFloat> (ids::sustain, "Sustain", NormalisableRange<float> (0.0f, 1.0f), 1.0f,  pctAttr()));
-    layout.add (std::make_unique<AudioParameterFloat> (ids::release, "Release", skewed (1.0f, 1000.0f, 80.0f),  25.0f,  msAttr()));
-    layout.add (std::make_unique<AudioParameterFloat> (ids::gate,    "Gate",    NormalisableRange<float> (0.05f, 1.0f), 0.75f, pctAttr()));
+    layout.add (std::make_unique<AudioParameterFloat> (ids::sustain, "Sustain", NormalisableRange<float> (0.0f, 1.0f), 0.5f,  pctAttr()));
+    layout.add (std::make_unique<AudioParameterFloat> (ids::release, "Release", skewed (1.0f, 1000.0f, 80.0f),  40.0f,  msAttr()));
+    layout.add (std::make_unique<AudioParameterFloat> (ids::gate,    "Gate",    NormalisableRange<float> (0.05f, 1.0f), 1.0f, pctAttr()));
     layout.add (std::make_unique<AudioParameterFloat> (ids::swing,   "Swing",   NormalisableRange<float> (0.0f, 1.0f), 0.0f,   pctAttr()));
     layout.add (std::make_unique<AudioParameterFloat> (ids::depth,   "Depth",   NormalisableRange<float> (0.0f, 1.0f), 1.0f,   pctAttr()));
     layout.add (std::make_unique<AudioParameterInt>   (ids::stereo,  "Stereo Offset", 0, 8, 0,
@@ -72,7 +74,7 @@ AudioProcessorValueTreeState::ParameterLayout TranceGateProcessor::createLayout(
 
 const StringArray& TranceGateProcessor::variationParamIds()
 {
-    static const StringArray list { "mode", "attack", "decay", "sustain", "release", "gate",
+    static const StringArray list { "mode", "character", "attack", "decay", "sustain", "release", "gate",
                                     "swing", "depth", "stereo", "mix", "cutoff", "reso" };
     return list;
 }
@@ -97,17 +99,26 @@ TranceGateProcessor::TranceGateProcessor()
     pMix     = apvts.getRawParameterValue ("mix");
     pCutoff  = apvts.getRawParameterValue ("cutoff");
     pReso    = apvts.getRawParameterValue ("reso");
+    pCharacter = apvts.getRawParameterValue ("character");
 
-    // Factory start-up: A = Rage Chop, B = Rhythm Stab 3-3-2, C = Supersaw Stutter
-    const int starts[] = { 2, 1, 5 };
+    // Factory start-up: A = Classic Gate (Kilohearts start-up pattern), B = Rhythm Stab 3-3-2, C = Supersaw Stutter.
+    // Each variation also starts with its preset's envelope.
+    const std::pair<const char*, const char*> starts[] = { { "Trance", "Classic Gate" },
+                                                           { "Standard", "Rhythm Stab 3-3-2" },
+                                                           { "Standard", "Supersaw Stutter" } };
     for (int v = 0; v < kNumVariations; ++v)
     {
-        const int idx = tg::presetIndex ("Standard", starts[v]);
+        const int idx = tg::presetIndexByName (starts[v].first, starts[v].second);
         presetIndex[(size_t) v] = idx;
         presetEdited[(size_t) v] = false;
-        if (idx >= 0) patterns[(size_t) v].set (tg::presetLibrary()[(size_t) idx].data);
+        if (idx >= 0)
+        {
+            patterns[(size_t) v].set (tg::presetLibrary()[(size_t) idx].data);
+            applyPresetEnvelope (tg::presetEnvelope (tg::presetLibrary()[(size_t) idx]));
+        }
         storeKnobsInto (v);
     }
+    recallKnobsFrom (0);
 
     apvts.addParameterListener ("variation", this);
     for (auto* p : getParameters())
@@ -139,6 +150,7 @@ tg::GateParams TranceGateProcessor::getGateParams() const
     g.releaseMs = pRelease->load();
     g.gate      = pGate->load();
     g.swing     = pSwing->load();
+    g.character = juce::jlimit (0, tg::kNumCharacters - 1, (int) pCharacter->load());
     return g;
 }
 
@@ -149,6 +161,16 @@ void TranceGateProcessor::setParam (const String& id, float plainValue)
 {
     if (auto* p = apvts.getParameter (id))
         p->setValueNotifyingHost (p->convertTo0to1 (plainValue));
+}
+
+void TranceGateProcessor::applyPresetEnvelope (const tg::PresetEnvelope& e)
+{
+    setParam ("character", (float) e.character);
+    setParam ("attack",    e.attackMs);
+    setParam ("decay",     e.decayMs);
+    setParam ("sustain",   e.sustain);
+    setParam ("release",   e.releaseMs);
+    setParam ("gate",      e.gate);
 }
 
 void TranceGateProcessor::storeKnobsInto (int v)
@@ -201,6 +223,11 @@ void TranceGateProcessor::loadPreset (int libraryIndex)
     pushUndoPoint();
     const int v = getVariation();
     patterns[(size_t) v].set (lib[(size_t) libraryIndex].data);
+    {
+        const ScopedValueSetter<bool> svs (restoring, true);   // one undo point for pattern + envelope
+        applyPresetEnvelope (tg::presetEnvelope (lib[(size_t) libraryIndex]));
+    }
+    storeKnobsInto (v);
     presetIndex[(size_t) v] = libraryIndex;
     presetEdited[(size_t) v] = false;
     ++stateVersion;
@@ -318,7 +345,7 @@ void TranceGateProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& 
     for (int ch = getTotalNumInputChannels(); ch < getTotalNumOutputChannels(); ++ch)
         buffer.clear (ch, 0, numSamples);
 
-    // MIDI C1..G1 (36..43) loads Standard A..H into the current variation
+    // MIDI C1..G1 (36..43) loads the 8 Standard rhythms into the current variation
     for (const auto meta : midi)
     {
         const auto msg = meta.getMessage();

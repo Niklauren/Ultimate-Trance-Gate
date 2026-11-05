@@ -9,6 +9,7 @@
 #include "PluginEditor.h"
 #include "Presets.h"
 #include "Settings.h"
+#include "GateEngineOld.h"   // frozen v2.0 engine, only for the before/after comparison
 
 using namespace juce;
 
@@ -69,6 +70,35 @@ static float rms (const AudioBuffer<float>& b, int ch, int start, int len)
     double s = 0;
     for (int i = 0; i < len; ++i) { const float v = b.getSample (ch, start + i); s += v * v; }
     return (float) std::sqrt (s / jmax (1, len));
+}
+
+// High-frequency splatter of a gated 220 Hz sine: energy above 2 kHz relative to the total, in dB.
+// Pure gating artefacts (clicks, hard corners) are what lands up there.
+template <typename Voice, typename Params>
+static double splatterDb (const Params& gp, const tg::PatternData& pat, double sr = 48000.0, double bpm = 140.0)
+{
+    Voice v;
+    v.prepare (sr);
+    v.setParams (gp);
+    const int order = 17, N = 1 << order;
+    std::vector<float> buf ((size_t) N * 2, 0.0f);
+    for (int n = 0; n < N; ++n)
+    {
+        const double beat = n * bpm / 60.0 / sr;
+        const float g = v.process (beat, pat);
+        const double w = 0.5 - 0.5 * std::cos (2.0 * MathConstants<double>::pi * n / (N - 1));
+        buf[(size_t) n] = (float) (std::sin (2.0 * MathConstants<double>::pi * 220.0 * n / sr) * g * w);
+    }
+    dsp::FFT fft (order);
+    fft.performFrequencyOnlyForwardTransform (buf.data());
+    double hi = 0, all = 0;
+    for (int k = 1; k < N / 2; ++k)
+    {
+        const double e = (double) buf[(size_t) k] * buf[(size_t) k];
+        all += e;
+        if (k * sr / N > 2000.0) hi += e;
+    }
+    return 10.0 * std::log10 (hi / all + 1e-30);
 }
 
 static void writePng (Component& c, const File& f)
@@ -146,12 +176,21 @@ int main (int argc, char** argv)
     proc.setPlayHead (&ph);
     proc.setPlayConfigDetails (2, 2, sr, 512);
     proc.prepareToPlay (sr, 512);
-    setP (proc, "attack", 0.5f);
-    setP (proc, "release", 5.0f);
+    // sections 1-8 check exact levels: hard edges, full sustain, gate closing at 75 %
+    auto testEnvelope = [&proc]
+    {
+        setP (proc, "character", 0.0f);
+        setP (proc, "attack", 0.5f);
+        setP (proc, "decay", 150.0f);
+        setP (proc, "release", 5.0f);
+        setP (proc, "sustain", 1.0f);
+        setP (proc, "gate", 0.75f);
+    };
+    testEnvelope();
 
     const auto& lib = tg::presetLibrary();
     std::cout << "Library: " << lib.size() << " rhythms in " << tg::presetCategories().size() << " categories" << std::endl;
-    check (lib.size() >= 240, "library has 240+ rhythms (incl. Standard A-H)");
+    check (lib.size() >= 240, "library has 240+ rhythms (incl. Standard)");
     check (tg::presetCategories()[0] == "Standard" && tg::presetCategories()[tg::presetCategories().size() - 1] == "Creative",
            "Standard is the first category, Creative the last");
     {
@@ -292,14 +331,16 @@ int main (int argc, char** argv)
         setP (proc, "mix", 1.0f);
     }
 
+    testEnvelope();   // presets loaded above brought their own envelopes
+
     //---------------------------------------------------------------- 6. MIDI notes -> Standard
-    std::cout << "\n6) MIDI C1..G1 load Standard A..H" << std::endl;
+    std::cout << "\n6) MIDI C1..G1 load the Standard rhythms" << std::endl;
     {
         MidiBuffer m;
         m.addEvent (MidiMessage::noteOn (1, 36 + 3, (uint8) 100), 0);
         render (proc, ph, sr, 1, &m);
         MessageManager::getInstance()->runDispatchLoopUntil (50);
-        check (proc.presetIndex[0].load() == tg::presetIndex ("Standard", 3), "note D#1 -> Standard D (Gallop Gate) in the current variation");
+        check (proc.presetIndex[0].load() == tg::presetIndex ("Standard", 3), "note D#1 -> 4th Standard rhythm in the current variation");
     }
 
     //---------------------------------------------------------------- 7. state
@@ -357,7 +398,7 @@ int main (int argc, char** argv)
     {
         std::cout << "\n9) Editor" << std::endl;
         proc.selectVariation (0);
-        proc.loadPreset (tg::presetIndex ("Standard", 2));   // Rage Chop
+        proc.loadPreset (tg::presetIndexByName ("Rage", "Rage Chop"));
         // fill the signal view with a chord-like signal
         render (proc, ph, sr, 2, nullptr, 0.0);
         {
@@ -414,6 +455,112 @@ int main (int argc, char** argv)
         for (int i = 0; i < 3; ++i) MessageManager::getInstance()->runDispatchLoopUntil (40);
         writePng (*ed, outDir.getChildFile ("ui-filter.png"));
         proc.selectMode (TranceGateProcessor::ModeVolume);
+    }
+
+    //---------------------------------------------------------------- 10. smoothness vs v2.0 engine
+    std::cout << "\n10) Gate smoothness (energy above 2 kHz on a gated 220 Hz sine; lower = smoother)" << std::endl;
+    {
+        const auto classic = lib[(size_t) tg::presetIndexByName ("Trance", "Classic Gate")].data;
+        check (classic.length == 16 && classic.resolution == tg::R32 && classic.toString() == "X.X.X--.X.X.X--.",
+               "Classic Gate = Kilohearts start-up pattern (16 x 1/32)");
+        TranceGateProcessor fresh;
+        check (fresh.patterns[0].get().toString() == classic.toString(), "a new instance starts on Classic Gate (variation A)");
+        {
+            const char* original[] = { "Sunrise Gate", "Rhythm Stab 3-3-2", "Rage Chop", "Gallop Gate",
+                                       "KBBB Roll", "Supersaw Stutter", "3-3-2 Chords", "Build-Up 32" };
+            bool same = true;
+            for (int i = 0; i < 8; ++i) same = same && lib[(size_t) tg::presetIndex ("Standard", i)].name == original[i];
+            check (same && tg::presetIndex ("Standard", 8) < 0, "Standard folder is the original 8 (A-H for MIDI C1..G1)");
+        }
+        {
+            // presets bring their envelope; loading one sets Character + ADSR + Gate, nothing else
+            TranceGateProcessor q;
+            setP (q, "mix", 0.7f);
+            q.loadPreset (tg::presetIndexByName ("Rage", "Rage Chop"));
+            const auto e = tg::presetEnvelope ("Rage", "Rage Chop");
+            check ((int) q.apvts.getRawParameterValue ("character")->load() == tg::CharHard
+                     && std::abs (q.apvts.getRawParameterValue ("release")->load() - e.releaseMs) < 0.01f
+                     && std::abs (q.apvts.getRawParameterValue ("mix")->load() - 0.7f) < 1e-3f,
+                   "Rage Chop loads Hard character + its ADSR, keeps Mix");
+            q.undo();
+            check ((int) q.apvts.getRawParameterValue ("character")->load() == tg::CharSmooth
+                     && std::abs (q.apvts.getRawParameterValue ("sustain")->load() - 0.5f) < 1e-3f,
+                   "one undo brings back the previous pattern and envelope");
+            q.loadPreset (tg::presetIndexByName ("Trance", "Breakdown Swell"));
+            check ((int) q.apvts.getRawParameterValue ("character")->load() == tg::CharPump, "Breakdown Swell -> Pump character");
+            // every preset gets a sane envelope
+            bool ok = true;
+            std::map<int, int> perChar;
+            for (auto& pr : lib)
+            {
+                const auto en = tg::presetEnvelope (pr);
+                ok = ok && en.attackMs >= 0.1f && en.attackMs <= 300.0f && en.releaseMs >= 1.0f && en.gate >= 0.05f && en.gate <= 1.0f
+                        && en.sustain >= 0.0f && en.sustain <= 1.0f && en.character >= 0 && en.character < tg::kNumCharacters;
+                ++perChar[en.character];
+            }
+            check (ok, "all " + String ((int) lib.size()) + " presets have an envelope in range");
+            std::cout << "    by character: Smooth " << perChar[0] << ", Hard " << perChar[1] << ", Soft " << perChar[2] << ", Pump " << perChar[3] << std::endl;
+        }
+        {
+            // the four characters really differ
+            tg::PatternData p = tg::PatternData::fromString ("X...X...X...X...");
+            double prevE = -1.0;
+            bool differ = true;
+            for (int c = 0; c < tg::kNumCharacters; ++c)
+            {
+                tg::GateParams gp; gp.character = c; gp.attackMs = 20.0f; gp.releaseMs = 40.0f; gp.gate = 0.5f; gp.sustain = 1.0f;
+                tg::GateVoice v; v.prepare (48000.0); v.setParams (gp);
+                double e = 0;   // energy of the first 10 ms of a hit
+                for (int n = 0; n < 480; ++n) { const float g = v.process (n * 2.0 / 48000.0, p); e += g * g; }
+                std::cout << "    " << tg::characterNames()[c] << ": first 10 ms energy " << String (e, 1) << std::endl;
+                differ = differ && std::abs (e - prevE) > 1.0;
+                prevE = e;
+            }
+            check (differ, "Smooth / Hard / Soft / Pump attacks are audibly different");
+        }
+
+        tg_old::GateParams oldDefaults;                       // A 1 ms, R 25 ms, Gate 75 %, Sustain 100 %
+        tg::GateParams sameKnobs; sameKnobs.character = tg::CharSmooth; sameKnobs.attackMs = 1.0f; sameKnobs.releaseMs = 25.0f; sameKnobs.gate = 0.75f; sameKnobs.sustain = 1.0f;
+        tg::GateParams newDefaults;                            // A 4 ms, S 50 %, R 40 ms, Gate 100 %, Smooth
+        const double a = splatterDb<tg_old::GateVoice> (oldDefaults, classic);
+        const double b = splatterDb<tg::GateVoice> (sameKnobs, classic);
+        const double c = splatterDb<tg::GateVoice> (newDefaults, classic);
+        std::cout << "    v2.0 engine, old defaults : " << String (a, 1) << " dB" << std::endl;
+        std::cout << "    new engine, same knobs    : " << String (b, 1) << " dB" << std::endl;
+        std::cout << "    new engine, new defaults  : " << String (c, 1) << " dB" << std::endl;
+        check (b < a - 3.0, "new envelope is smoother with the same knobs");
+        check (c < a - 10.0, "new defaults are much smoother than the old ones");
+
+        // a quiet step after a loud one used to jump down in one sample
+        tg::PatternData p; p.length = 2; p.resolution = tg::R16; p.steps[0].level = 1.0f; p.steps[1].level = 0.3f;
+        tg::GateParams gp; gp.gate = 1.0f; gp.attackMs = 5.0f; gp.sustain = 1.0f;
+        tg::GateVoice v; v.prepare (48000.0); v.setParams (gp);
+        float prev = 0.0f, maxJump = 0.0f;
+        for (int n = 1; n < 48000; ++n) { const float g = v.process (n * 120.0 / 60.0 / 48000.0, p); if (n > 2000) maxJump = jmax (maxJump, std::abs (g - prev)); prev = g; }
+        check (maxJump < 0.01f, "no sample-to-sample jumps between steps of different level (max " + String (maxJump, 4) + ")");
+    }
+
+    //---------------------------------------------------------------- docs/PRESETS.md
+    {
+        String md;
+        md << "# Ultimate Trance Gate — preset library\n\n"
+           << "`X`=100% `x`=70% `o`=40% `,`=20% `.`=off `-`=tie `2/3/4`=ratchet\n\n"
+           << "Each preset also sets the envelope: Character, Attack, Decay, Sustain, Release, Gate.\n";
+        String cat;
+        for (auto& pr : lib)
+        {
+            if (pr.category != cat)
+            {
+                cat = pr.category;
+                md << "\n## " << cat << "\n\n| Preset | Grid | Pattern | Character | A / D / S / R | Gate |\n|---|---|---|---|---|---|\n";
+            }
+            const auto e = tg::presetEnvelope (pr);
+            md << "| " << pr.name << " | " << pr.data.length << " x " << tg::resolutions()[(size_t) pr.data.resolution].name
+               << " | `" << pr.data.toString() << "` | " << tg::characterNames()[e.character]
+               << " | " << String (e.attackMs, e.attackMs < 1.0f ? 1 : 0) << " ms / " << (int) e.decayMs << " ms / "
+               << roundToInt (e.sustain * 100.0f) << "% / " << (int) e.releaseMs << " ms | " << roundToInt (e.gate * 100.0f) << "% |\n";
+        }
+        outDir.getChildFile ("PRESETS.md").replaceWithText (md);
     }
 
     std::cout << "\n" << (failures == 0 ? "ALL TESTS PASSED" : String (failures) + " TEST(S) FAILED") << std::endl;

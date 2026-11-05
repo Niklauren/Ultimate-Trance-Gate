@@ -196,6 +196,13 @@ TranceGateEditor::TranceGateEditor (TranceGateProcessor& p)
     };
     addAndMakeVisible (rate);
 
+    for (int i = 0; i < tg::kNumCharacters; ++i)
+        character.addItem (tg::characterNames()[i], i + 1);
+    character.setTooltip (tg::tips::character());
+    character.getProperties().set ("leftText", true);
+    characterAttach = std::make_unique<AudioProcessorValueTreeState::ComboBoxAttachment> (proc.apvts, "character", character);
+    addAndMakeVisible (character);
+
     hits.labelWidth = 46.0f;
     rot.labelWidth = 26.0f;
     hits.setValue (5);
@@ -484,6 +491,8 @@ void TranceGateEditor::paintOverChildren (Graphics& g)
 {
     auto r = rate.getBounds().toFloat();
     tg::ui::drawTracked (g, "RATE", { r.getX() + 9.0f, r.getY(), 40.0f, r.getHeight() }, 9.0f, 700, col::dim, Justification::centredLeft, 0.14f);
+    auto c = character.getBounds().toFloat();
+    tg::ui::drawTracked (g, "CHARACTER", { c.getX() + 1.0f, c.getY() - 16.0f, c.getWidth(), 12.0f }, 9.0f, 700, col::dim, Justification::centredLeft, 0.1f);
 }
 
 void TranceGateEditor::resized()
@@ -516,8 +525,9 @@ void TranceGateEditor::resized()
 
     // mode + knobs
     for (int m = 0; m < 3; ++m)
-        modeButtons[(size_t) m].setBounds (30, 292 + m * 22, 50, 20);
-    const int kx0 = 90, kx1 = kW - 28;
+        modeButtons[(size_t) m].setBounds (28, 292 + m * 22, 48, 20);
+    character.setBounds (86, 318, 92, 26);                  // CHARACTER, right before the envelope knobs
+    const int kx0 = 190, kx1 = kW - 26;
     const int n = (int) knobs.size();
     const float kw = (float) (kx1 - kx0 - 14) / (float) n;
     for (int i = 0; i < n; ++i)

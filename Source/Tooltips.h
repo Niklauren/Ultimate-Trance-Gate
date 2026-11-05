@@ -15,7 +15,8 @@ inline juce::String credit()       { return ru ("created by mikita_laurenau\n"
                                                 "Открыть Instagram автора плагина."); }
 inline juce::String presetButton() { return ru ("Пресеты\n"
                                                 "Открыть библиотеку ритмов: Standard, жанры и Creative. Внутри есть поиск и избранное.\n"
-                                                "Пресет загружается в текущую вариацию. Звёздочка * после названия значит, что ты уже поменял ритм."); }
+                                                "Пресет загружается в текущую вариацию вместе со своей огибающей: CHARACTER, ADSR и GATE под этот стиль. "
+                                                "Звёздочка * после названия значит, что ты уже поменял ритм."); }
 inline juce::String prevPreset()   { return ru ("Предыдущий пресет\n"
                                                 "Листает ритмы внутри текущей папки."); }
 inline juce::String nextPreset()   { return ru ("Следующий пресет\n"
@@ -27,6 +28,12 @@ inline juce::String variation (char v)
                "и переключай, чтобы сравнить на слух.\n"
                "В Ableton переключение можно автоматизировать: параметр Variation.");
 }
+inline juce::String character() { return ru ("CHARACTER — характер гейта\n"
+                                               "Форма, с которой гейт открывается и закрывается. Ритм и ручки те же, меняется только «удар».\n"
+                                               "Smooth — плавные края без щелчков, звучание как у Kilohearts. "
+                                               "Hard — резкий рубленый звук, края с щелчком, под rage и статтеры. "
+                                               "Soft — мягко и округло, как аналоговый VCA. "
+                                               "Pump — звук «засасывается» в начале шага, как сайдчейн."); }
 inline juce::String search()       { return ru ("Поиск\n"
                                                 "Ищет сразу по всем папкам: по названию и по жанру. Например: rage, triplet, stutter."); }
 inline juce::String star()         { return ru ("Избранное\n"
